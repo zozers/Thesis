@@ -371,13 +371,22 @@ class GameLogic{
         if(this.swaps[this.levelnum] > 0){
             for(let i=0; i < this.columns; i ++){
                 for(let j = 0; j < this.rows; j ++){
-                    if(this.gameArray[i][j].value == c1 && this.gameArray[i][j].piece == 0){
+
+
+                    // if(this.gameArray[i][j].value == c1 && this.gameArray[i][j].piece == 0){
+                    //     this.gameArray[i][j].value = c2                    
+                    // }
+                     if(this.gameArray[i][j].value == c1){
                         this.gameArray[i][j].value = c2                    
                     }
-
-                    else if(this.gameArray[i][j].value == c2 && this.gameArray[i][j].piece == 0){
+                    else if(this.gameArray[i][j].value == c2){
                         this.gameArray[i][j].value = c1
                     }
+
+
+                    // else if(this.gameArray[i][j].value == c2 && this.gameArray[i][j].piece == 0){
+                    //     this.gameArray[i][j].value = c1
+                    // }
                 }
             }
 
@@ -435,10 +444,7 @@ class GameLogic{
     }
 
     checkGoal(monster, dragX, dragY, buff){
-        
-        if(dragX - buff> monster.x && monster.movable == true){
-
-                
+        if(dragX - buff > monster.x && monster.movable == true){                
                 let newPosition = [monster.position[0], monster.position[1]+1];
 
                 
@@ -453,7 +459,6 @@ class GameLogic{
                 
             }
         if(dragY-buff > monster.y && monster.movable == true){
-            
             let newPosition = [monster.position[0]+1, monster.position[1]];
             if(this.compareArray(newPosition, monster.goalPos)){
                 console.log("YAY");
@@ -513,31 +518,29 @@ class GameLogic{
             }
             
         }
-        
+        //moving right
         else if(dragX - buff > monster.x && this.getValueAt(monster.position[0], monster.position[1]+1) == monster.type && monster.movable == true){
-                
+                console.log("right")
                 let newPosition = [monster.position[0], monster.position[1]+1];
                 this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
                 monster.x += 80;
                 monster.position = newPosition;
-            }
+        }
         
+        //moving down
         else if(dragY - buff > monster.y && this.getValueAt(monster.position[0]+1, monster.position[1]) == monster.type && monster.movable == true){
-            
-
-            console.log("hello");
+            console.log("down");
             let newPosition = [monster.position[0]+1, monster.position[1]];
-            
             this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
-
             monster.y += 80;
             monster.position = newPosition;
 
 
         }
 
-        else if(dragX+(2*buff) < monster.x && this.getValueAt(monster.position[0], monster.position[1]-1) == monster.type && monster.movable == true){
-            
+        //moving left
+        else if(dragX+ buff < monster.x && this.getValueAt(monster.position[0], monster.position[1]-1) == monster.type && monster.movable == true){
+            console.log("left");
             let newPosition = [monster.position[0], monster.position[1]-1];
             this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
 
@@ -545,8 +548,10 @@ class GameLogic{
             monster.position = newPosition;
 
         }
+
+        //moving up
         else if(dragY+buff < monster.y && this.getValueAt(monster.position[0]-1, monster.position[1]) == monster.type && monster.movable == true){
-            
+            console.log("up");
             let newPosition = [monster.position[0]-1, monster.position[1]];
             this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
 
