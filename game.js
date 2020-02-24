@@ -240,6 +240,7 @@ class playGame extends Phaser.Scene{
         this.sprites.push(goal1);
 
         let pos2 = this.GameLogic.levels.goals[this.GameLogic.levelnum][1];
+        console.log(pos2);
         let goal2 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos2[1]+1) +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos2[0] + gameOptions.gemSize / 2, 'star');
         goal2.setDepth(1);
         goal2.setTint(0xe84e4e);
@@ -388,22 +389,21 @@ class GameLogic{
         this.items = (obj.items != undefined) ? obj.items : 3;
         this.goalsReached = 0;
 
-        this.swapAmmounts = [5, 4, 10];
+        this.swapAmmounts = [5, 4, 10, 5];
         this.swaps = null;
         this.leveltest = [[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1]];
         this.level1 = [[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3]];
         this.level2 = [[1,1,2,2,3,3],[2,2,2,2,3,3],[3,3,2,2,1,1],[1,1,2,2,3,3],[1,1,1,1,3,3],[1,1,2,2,3,3]];
         this.level3 = [[2,1,2,1,3,3],[1,2,2,2,1,3],[3,3,1,2,1,2],[1,1,2,1,3,1],[1,3,1,3,2,3],[1,2,1,2,1,3]];
-
         this.levelnum = 0;
         this.maxLevelSolved = 0;
         // this.levels = [this.leveltest,this.level1, this.level2, this.level3]
         this.levels = [this.level1, this.level2, this.level3];
 
-        this.levels.goals = [[[1, 5], [5, 5],[0, 2]],[[1, 5], [5, 5],[0, 2]],[[1, 5], [5, 5],[0, 2]]];
+        this.levels.goals = [ [ [1, 5], [5, 5],[0, 2] ], [ [1, 5], [5, 5],[0, 2] ] , [ [1, 5], [5, 5],[0, 2] ] ];
 
         this.totallevels = 2; // levelnum starts at 0 
-        this.monsterStartPos = [ [ [5, 0],[3, 0],[1, 0] ], [ [5, 0],[3, 0],[1, 0] ], [ [5, 0],[3, 0],[1, 0] ]];
+        this.monsterStartPos = [ [ [5, 0],[3, 0],[1, 0] ], [ [5, 0],[3, 0],[1, 0] ], [ [5, 0],[3, 0],[1, 0] ] ];
         this.monsterPos = null;
 
         // this.canNext = false;
