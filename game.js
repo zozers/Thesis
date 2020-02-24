@@ -3,7 +3,7 @@ let game;
 let gameOptions = {
     gemSize: 80,
     boardOffset: {
-        x: 130,
+        x: 80,
         y: 320
     },
     localStorageName: "ThesisGameLogic"
@@ -128,29 +128,29 @@ class playGame extends Phaser.Scene{
 
     buttons(){
 
-        let button1 = this.add.sprite(game.config.width / 2-165, game.config.height - 200, 'red_blue').setInteractive();
+        let button1 = this.add.sprite(game.config.width / 2- 220, game.config.height - 200, 'red_blue').setInteractive();
         this.sprites.push(button1);
         
         // let rbText = this.add.text(game.config.width / 2 - 245, game.config.height - 220, "Swap R-B", { font: '35px Arial', color: '0x222222' });
 
 
-        let button2 = this.add.sprite(game.config.width / 2 + 48, game.config.height - 200, 'yellow_red').setInteractive();
+        let button2 = this.add.sprite(game.config.width / 2 + 0, game.config.height - 200, 'yellow_red').setInteractive();
         this.sprites.push(button2);
 
         // let ryText = this.add.text(game.config.width / 2 - 25, game.config.height - 220, "Swap R-Y", { font: '35px Arial', color: '0x222222' });
     
            
-        let button3 = this.add.sprite(game.config.width / 2 + 260, game.config.height - 200, 'yellow_blue').setInteractive();
+        let button3 = this.add.sprite(game.config.width / 2 + 220, game.config.height - 200, 'yellow_blue').setInteractive();
         this.sprites.push(button3);
 
         // let ybText = this.add.text(game.config.width / 2 + 185, game.config.height - 220, "Swap Y-B", { font: '35px Arial', color: '0x222222' });
     
 
-        let swapText = this.add.text(game.config.width/ 2 - 220, game.config.height/5 - 130, "Swaps Left: ", { font: '85px Arial', fill: '#BDBDBD'});
+        let swapText = this.add.text(game.config.width/ 2 - 250, game.config.height/5 - 130, "Swaps Left: ", { font: '85px Arial', fill: '#BDBDBD'});
         this.sprites.push(swapText);
         this.GameLogic.displaySwap(swapText);
 
-        let prev = this.add.sprite(game.config.width/ 2 - 165, game.config.height/5 + 30, 'button').setInteractive();
+        let prev = this.add.sprite(game.config.width/ 2 - 220, game.config.height/5 + 30, 'button').setInteractive();
         if(this.GameLogic.levelnum > 0){
             prev.setTint(0xffffff);
         }
@@ -160,15 +160,15 @@ class playGame extends Phaser.Scene{
        
         this.sprites.push(prev);
 
-        let prevText = this.add.text(game.config.width/2 - 255, game.config.height/5 + 10, "Previos Level", { font: '30px Arial', color: '0x222222' });
+        let prevText = this.add.text(game.config.width/2 - 310 , game.config.height/5 + 10, "Previos Level", { font: '30px Arial', color: '0x222222' });
 
-        let reset = this.add.sprite(game.config.width / 2 + 48, game.config.height/5 + 30, 'button').setInteractive();
+        let reset = this.add.sprite(game.config.width / 2 , game.config.height/5 + 30, 'button').setInteractive();
         this.sprites.push(reset);
 
-        let resetText = this.add.text(game.config.width/2 - 30, game.config.height/5 + 10, "Reset Level", { font: '30px Arial', color: '0x222222' });
+        let resetText = this.add.text(game.config.width/2 - 80, game.config.height/5 + 10, "Reset Level", { font: '30px Arial', color: '0x222222' });
 
 
-        let next = this.add.sprite(game.config.width/ 2 + 260, game.config.height/5 + 30, 'button').setInteractive();
+        let next = this.add.sprite(game.config.width/ 2 + 220, game.config.height/5 + 30, 'button').setInteractive();
         if(this.GameLogic.levelnum < this.GameLogic.maxLevelSolved && this.GameLogic.levelnum < this.GameLogic.totallevels){
             next.setTint(0xffffff);
 
@@ -179,7 +179,7 @@ class playGame extends Phaser.Scene{
        
         this.sprites.push(next);
         
-        let nextText = this.add.text(game.config.width/2 + 190, game.config.height/5 + 10, "Next Level", { font: '30px Arial', color: '0x222222' });
+        let nextText = this.add.text(game.config.width/2 + 150, game.config.height/5 + 10, "Next Level", { font: '30px Arial', color: '0x222222' });
         
 
         button1.on('pointerdown', function (pointer) 
@@ -372,12 +372,12 @@ class playGame extends Phaser.Scene{
     next(monsters){
         
         if(this.GameLogic.checkEnd()){
-            let winText = this.add.text(game.config.width / 2 - 75, game.config.height /2, "YOU WIN!", { font: '55px Arial', color: '0x222222' });
+            let winText = this.add.text(game.config.width / 2 - 120, game.config.height /2-15, "YOU WIN!", { font: '55px Arial', color: '0x222222' });
         }
 
         else{
-            let nextButton = this.add.sprite(game.config.width / 2 + 48, game.config.height/2, 'button').setInteractive();
-            let nextText = this.add.text(game.config.width / 2 - 35, game.config.height /2-15, "Next Level", { font: '35px Arial', color: '0x222222' });
+            let nextButton = this.add.sprite(game.config.width / 2 , game.config.height/2, 'button').setInteractive();
+            let nextText = this.add.text(game.config.width / 2 - 80, game.config.height /2-15, "Next Level", { font: '35px Arial', color: '0x222222' });
             this.sprites.push(nextButton);
             this.sprites.push(nextText);
 
