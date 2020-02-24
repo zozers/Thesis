@@ -37,7 +37,10 @@ class playGame extends Phaser.Scene{
             frameWidth: gameOptions.gemSize,
             frameHeight: gameOptions.gemSize
         });
-        this.load.image('button', 'assets/sprites/button.png');
+        this.load.image('button', 'assets/sprites/new_button.png');
+        this.load.image('red_blue', 'assets/sprites/red_blue.png');
+        this.load.image('yellow_red', 'assets/sprites/yellow_red.png');
+        this.load.image('yellow_blue', 'assets/sprites/yellow_blue.png');
         this.load.image('monster', 'assets/sprites/monster.png');
         this.load.image('star', 'assets/sprites/star.png');
 
@@ -61,7 +64,7 @@ class playGame extends Phaser.Scene{
         } : JSON.parse(localStorage.getItem(gameOptions.localStorageName));
 
         this.GameLogic.maxLevelSolved = this.savedData.MaxLevelSolved;
-        this.GameLogic.levelnum = this.savedData.CurrentLevel;
+        this.GameLogic.levelnum = this.savedData.CurrentLevel;        
         // this.GameLogic.levelnum = 0;
         this.GameLogic.generateBoard();
         this.drawField();
@@ -95,43 +98,58 @@ class playGame extends Phaser.Scene{
 
     buttons(){
 
-        let button1 = this.add.sprite(game.config.width / 2-165, game.config.height - 200, 'button').setInteractive();
+        let button1 = this.add.sprite(game.config.width / 2-165, game.config.height - 200, 'red_blue').setInteractive();
         this.sprites.push(button1);
         
-        let rbText = this.add.text(game.config.width / 2 - 245, game.config.height - 220, "Swap R-B", { font: '35px Arial', color: '0x222222' });
+        // let rbText = this.add.text(game.config.width / 2 - 245, game.config.height - 220, "Swap R-B", { font: '35px Arial', color: '0x222222' });
 
 
-        let button2 = this.add.sprite(game.config.width / 2 + 48, game.config.height - 200, 'button').setInteractive();
+        let button2 = this.add.sprite(game.config.width / 2 + 48, game.config.height - 200, 'yellow_red').setInteractive();
         this.sprites.push(button2);
 
-        let ryText = this.add.text(game.config.width / 2 - 25, game.config.height - 220, "Swap R-Y", { font: '35px Arial', color: '0x222222' });
+        // let ryText = this.add.text(game.config.width / 2 - 25, game.config.height - 220, "Swap R-Y", { font: '35px Arial', color: '0x222222' });
     
            
-        let button3 = this.add.sprite(game.config.width / 2 + 260, game.config.height - 200, 'button').setInteractive();
+        let button3 = this.add.sprite(game.config.width / 2 + 260, game.config.height - 200, 'yellow_blue').setInteractive();
         this.sprites.push(button3);
 
-        let ybText = this.add.text(game.config.width / 2 + 185, game.config.height - 220, "Swap Y-B", { font: '35px Arial', color: '0x222222' });
+        // let ybText = this.add.text(game.config.width / 2 + 185, game.config.height - 220, "Swap Y-B", { font: '35px Arial', color: '0x222222' });
     
 
-        let swapText = this.add.text(game.config.width/ 2 - 220, game.config.height/5 - 100, "Swaps Left: ", { font: '90px Arial', fill: '#BDBDBD'});
+        let swapText = this.add.text(game.config.width/ 2 - 220, game.config.height/5 - 130, "Swaps Left: ", { font: '85px Arial', fill: '#BDBDBD'});
         this.sprites.push(swapText);
         this.GameLogic.displaySwap(swapText);
 
-        let prev = this.add.sprite(game.config.width/ 2 - 165, game.config.height/5 + 50, 'button').setInteractive();
+        let prev = this.add.sprite(game.config.width/ 2 - 165, game.config.height/5 + 30, 'button').setInteractive();
+        if(this.GameLogic.levelnum > 0){
+            prev.setTint(0xffffff);
+        }
+        else{
+            prev.setTint(0xe22121);
+        }
+       
         this.sprites.push(prev);
 
-        let prevText = this.add.text(game.config.width/2 - 255, game.config.height/5 + 30, "Previos Level", { font: '30px Arial', color: '0x222222' });
+        let prevText = this.add.text(game.config.width/2 - 255, game.config.height/5 + 10, "Previos Level", { font: '30px Arial', color: '0x222222' });
 
-        let reset = this.add.sprite(game.config.width / 2 + 48, game.config.height/5 + 50, 'button').setInteractive();
+        let reset = this.add.sprite(game.config.width / 2 + 48, game.config.height/5 + 30, 'button').setInteractive();
         this.sprites.push(reset);
 
-        let resetText = this.add.text(game.config.width/2 - 30, game.config.height/5 + 30, "Reset Level", { font: '30px Arial', color: '0x222222' });
+        let resetText = this.add.text(game.config.width/2 - 30, game.config.height/5 + 10, "Reset Level", { font: '30px Arial', color: '0x222222' });
 
 
-        let next = this.add.sprite(game.config.width/ 2 + 260, game.config.height/5 + 50, 'button').setInteractive();
+        let next = this.add.sprite(game.config.width/ 2 + 260, game.config.height/5 + 30, 'button').setInteractive();
+        if(this.GameLogic.levelnum < this.GameLogic.maxLevelSolved && this.GameLogic.levelnum < this.GameLogic.totallevels){
+            next.setTint(0xffffff);
+
+        }
+        else{
+            next.setTint(0xe22121);
+        }
+       
         this.sprites.push(next);
         
-        let nextText = this.add.text(game.config.width/2 + 190, game.config.height/5 + 30, "Next Level", { font: '30px Arial', color: '0x222222' });
+        let nextText = this.add.text(game.config.width/2 + 190, game.config.height/5 + 10, "Next Level", { font: '30px Arial', color: '0x222222' });
         
 
         button1.on('pointerdown', function (pointer) 
@@ -207,10 +225,8 @@ class playGame extends Phaser.Scene{
 
         let pos1 = this.GameLogic.levels.goals[this.GameLogic.levelnum][0];
         let goal1 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos1[1]+1) +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos1[0] + gameOptions.gemSize / 2, 'star');
-        console.log(goal1);
         goal1.setDepth(1);
         goal1.setTint(0x2ca7b2);
-        console.log(this.GameLogic.levels.goals[this.GameLogic.levelnum][0])
         goal1.position = pos1;
         this.sprites.push(goal1);
 
@@ -267,7 +283,6 @@ class playGame extends Phaser.Scene{
         monster2.win = false;
 
         let pos3 = this.GameLogic.monsterStartPos[this.GameLogic.levelnum][2];
-        console.log(this.GameLogic.monsterPos);
         let monster3 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos3[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos3[0] + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
         this.sprites.push(monster3);
 
@@ -322,33 +337,6 @@ class playGame extends Phaser.Scene{
 
     }
 
-    // monsterReset(monsters){
-    //         let monster1 = monsters[0];
-    //         let monster2 = monsters[1];
-    //         let monster3 = monsters[2];
-
-    //         monster1.position = [3, -1];
-    //         monster1.movable = true;
-    //         monster1.setInteractive({ draggable: true });
-    //         monster1.x = gameOptions.boardOffset.x + gameOptions.gemSize / 2;
-    //         monster1.y = gameOptions.boardOffset.y + gameOptions.gemSize * 3 + gameOptions.gemSize / 2;
-
-
-
-    //         monster2.position = [1, -1];
-    //         monster2.movable = true;
-    //         monster2.setInteractive({ draggable: true });
-    //         monster2.x = gameOptions.boardOffset.x + gameOptions.gemSize / 2;
-    //         monster2.y = gameOptions.boardOffset.y + gameOptions.gemSize * 1 + gameOptions.gemSize / 2;
-
-    //         monster3.position = [5, -1];
-    //         monster3.movable = true;
-    //         monster3.setInteractive({ draggable: true });
-    //         monster3.x = gameOptions.boardOffset.x + gameOptions.gemSize / 2;
-    //         monster3.y = gameOptions.boardOffset.y + gameOptions.gemSize * 5 + gameOptions.gemSize / 2;
-
-
-    // }
 
     next(monsters){
         
@@ -406,8 +394,11 @@ class GameLogic{
         this.levels.goals = [[[1, 5], [5, 5],[0, 2]],[[1, 5], [5, 5],[0, 2]],[[1, 5], [5, 5],[0, 2]]];
 
         this.totallevels = 2; // levelnum starts at 0 
-        this.monsterStartPos = [ [ [5, 0],[3, 0],[1, 0] ], [ [5, -1],[3, -1],[1, -1] ], [ [5, -1],[3, -1],[1, -1] ] ];
+        this.monsterStartPos = [ [ [5, 0],[3, 0],[1, 0] ], [ [5, 0],[3, 0],[1, 0] ], [ [5, 0],[3, 0],[1, 0] ]];
         this.monsterPos = null;
+
+        // this.canNext = false;
+        // this.canPrev = false;
     }
 
     // generates the game board from the levels
@@ -521,7 +512,6 @@ class GameLogic{
     monsterMove(monster, dragX, dragY, buff){ 
         //moving right        
         if(dragX - buff > monster.x && this.getValueAt(monster.position[0], monster.position[1]+1) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0], monster.position[1]+1])) == -1){
-                console.log("right")
                 let newPosition = [monster.position[0], monster.position[1]+1];
                 this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
                 monster.x += 80;
@@ -531,7 +521,6 @@ class GameLogic{
         
         //moving down
         else if(dragY - buff > monster.y && this.getValueAt(monster.position[0]+1, monster.position[1]) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0]+1, monster.position[1]])) == -1){
-            console.log("down");
             let newPosition = [monster.position[0]+1, monster.position[1]];
             this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
             monster.y += 80;
@@ -544,7 +533,6 @@ class GameLogic{
 
         //moving left
         else if(dragX+ buff < monster.x && this.getValueAt(monster.position[0], monster.position[1]-1) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0], monster.position[1]-1])) == -1){
-            console.log("left");
             let newPosition = [monster.position[0], monster.position[1]-1];
             this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
 
@@ -556,7 +544,6 @@ class GameLogic{
 
         //moving up
         else if(dragY+buff < monster.y && this.getValueAt(monster.position[0]-1, monster.position[1]) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0]-1, monster.position[1]])) == -1){
-            console.log("up");
             let newPosition = [monster.position[0]-1, monster.position[1]];
             this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
 
@@ -574,7 +561,10 @@ class GameLogic{
 
             if(this.goalsReached == 3){
                 monster.win = true;
-                this.maxLevelSolved += 1;
+                if(this.levelnum == this.maxLevelSolved){
+                    this.maxLevelSolved += 1;
+
+                }
 
                 localStorage.setItem(gameOptions.localStorageName,JSON.stringify({
                     CurrentLevel: this.levelnum,
@@ -584,7 +574,6 @@ class GameLogic{
             
         }
 
-        // monster.depth = monster.x + monster.y;
     }
 
 
