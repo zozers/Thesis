@@ -50,13 +50,14 @@ class playGame extends Phaser.Scene{
             items: 3,
         });
 
+
         this.savedData = localStorage.getItem(gameOptions.localStorageName) == null ? {
             level: 0
         } : JSON.parse(localStorage.getItem(gameOptions.localStorageName));
 
         console.log(this.savedData.level);
-        this.GameLogic.levelnum = this.savedData.level;
-        
+        // this.GameLogic.levelnum = this.savedData.level;
+        this.GameLogic.levelnum = 0;
         this.GameLogic.generateBoard();
         this.drawField();
         this.buttons();
@@ -149,24 +150,29 @@ class playGame extends Phaser.Scene{
     }
 
     goal(){
-        let goal1 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * 7 +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * 1 + gameOptions.gemSize / 2, 'star');
+
+        let pos1 = this.GameLogic.levels.goals[this.GameLogic.levelnum][0];
+        let goal1 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos1[1]+1) +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos1[0] + gameOptions.gemSize / 2, 'star');
+        console.log(goal1);
+        goal1.setDepth(1);
         goal1.setTint(0x2ca7b2);
-        goal1.position = [1, 6];
+        console.log(this.GameLogic.levels.goals[this.GameLogic.levelnum][0])
+        goal1.position = pos1;
         this.sprites.push(goal1);
 
-
-        let goal2 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * 7 +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * 5 + gameOptions.gemSize / 2, 'star');
+        let pos2 = this.GameLogic.levels.goals[this.GameLogic.levelnum][1];
+        let goal2 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos2[1]+1) +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos2[0] + gameOptions.gemSize / 2, 'star');
+        goal2.setDepth(1);
         goal2.setTint(0xe84e4e);
-        goal2.position = [5, 6];
+        goal2.position = pos2;
         this.sprites.push(goal2);
 
-
-        let goal3 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * 3 +gameOptions.gemSize / 2, gameOptions.boardOffset.y  + gameOptions.gemSize * -1 +gameOptions.gemSize / 2, 'star');
+        let pos3 =  this.GameLogic.levels.goals[this.GameLogic.levelnum][2];
+        let goal3 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos3[1]+1) +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos3[0] + gameOptions.gemSize / 2, 'star');
+        goal3.setDepth(1);
         goal3.setTint(0xf7c83b);
-        goal3.position = [-1, 2];
+        goal3.position = pos3;
         this.sprites.push(goal3);
-
-
         return [goal1, goal2, goal3];
 
     }
@@ -296,7 +302,7 @@ class playGame extends Phaser.Scene{
 
         else{
             let nextButton = this.add.sprite(game.config.width / 2 + 48, game.config.height/2, 'button').setInteractive();
-            let nextText = this.add.text(game.config.width / 2 - 25, game.config.height /2, "Next Level", { font: '35px Arial', color: '0x222222' });
+            let nextText = this.add.text(game.config.width / 2 - 35, game.config.height /2-15, "Next Level", { font: '35px Arial', color: '0x222222' });
             this.sprites.push(nextButton);
             this.sprites.push(nextText);
 
@@ -336,14 +342,19 @@ class GameLogic{
         this.goalsReached = 0;
 
         this.swaps = [5, 4, 10];
+        this.leveltest = [[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1]];
         this.level1 = [[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3]];
         this.level2 = [[1,1,2,2,3,3],[2,2,2,2,3,3],[3,3,2,2,1,1],[1,1,2,2,3,3],[1,1,1,1,3,3],[1,1,2,2,3,3]];
         this.level3 = [[2,1,2,1,3,3],[1,2,2,2,1,3],[3,3,1,2,1,2],[1,1,2,1,3,1],[1,3,1,3,2,3],[1,2,1,2,1,3]];
 
         this.levelnum = 0;
+        // this.levels = [this.leveltest,this.level1, this.level2, this.level3]
         this.levels = [this.level1, this.level2, this.level3]
 
+        this.levels.goals = [[[1, 5], [5, 5],[0, 2]],[[1, 6], [5, 6],[-1, 2]],[[1, 6], [5, 6],[-1, 2]]]
+
         this.totallevels = 2; // levelnum starts at 0 
+        this.monsterPos = [[5, -1],[3, -1],[1, -1]]
     }
 
     // generates the game board from the levels
@@ -444,7 +455,10 @@ class GameLogic{
     }
 
     checkGoal(monster, dragX, dragY, buff){
-        if(dragX - buff > monster.x && monster.movable == true){                
+        console.log(monster.goalPos);
+        console.log(this.getValueAt(monster.goalPos[0], monster.goalPos[1]));
+        console.log("monster type:", monster.type);
+        if(dragX - buff > monster.x && monster.movable == true && this.getValueAt(monster.goalPos[0], monster.goalPos[1]) == monster.type){                
                 let newPosition = [monster.position[0], monster.position[1]+1];
 
                 
@@ -458,7 +472,7 @@ class GameLogic{
                 }
                 
             }
-        if(dragY-buff > monster.y && monster.movable == true){
+        if(dragY-buff > monster.y && monster.movable == true && this.getValueAt(monster.goalPos[0], monster.goalPos[0]) == monster.type){
             let newPosition = [monster.position[0]+1, monster.position[1]];
             if(this.compareArray(newPosition, monster.goalPos)){
                 console.log("YAY");
@@ -471,7 +485,7 @@ class GameLogic{
             
         }
 
-        if(dragX+(2*buff) < monster.x && monster.movable == true){
+        if(dragX+(2*buff) < monster.x && monster.movable == true && this.getValueAt(monster.goalPos[0], monster.goalPos[0]) == monster.type){
             
             let newPosition = [monster.position[0], monster.position[1]-1];
             
@@ -486,7 +500,7 @@ class GameLogic{
             }
 
         }
-        if(dragY+buff < monster.y && monster.movable == true){
+        if(dragY+buff < monster.y && monster.movable == true && this.getValueAt(monster.goalPos[0], monster.goalPos[0]) == monster.type){
             
             let newPosition = [monster.position[0]-1, monster.position[1]];
             if(this.compareArray(newPosition, monster.goalPos)){
@@ -507,7 +521,15 @@ class GameLogic{
     }
 
     monsterMove(monster, dragX, dragY, buff){
+        // let test = [[5, -1],[3, -1],[1, -1]];
+        // let test2 = [5, 1];
+        // let temp = JSON.stringify(test);
+        // let temp2 = JSON.stringify(test2);
 
+        // console.log(temp.indexOf(temp2));
+        
+        // console.log(this.monsterPos.includes([monster.position[0], monster.position[1]+1]));
+        
         if(this.checkGoal(monster, dragX, dragY, buff)){
             console.log("goal reached");
 
@@ -518,45 +540,50 @@ class GameLogic{
             }
             
         }
-        //moving right
-        else if(dragX - buff > monster.x && this.getValueAt(monster.position[0], monster.position[1]+1) == monster.type && monster.movable == true){
+        //moving right        
+        else if(dragX - buff > monster.x && this.getValueAt(monster.position[0], monster.position[1]+1) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0], monster.position[1]+1])) == -1){
                 console.log("right")
                 let newPosition = [monster.position[0], monster.position[1]+1];
                 this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
                 monster.x += 80;
                 monster.position = newPosition;
+                this.monsterPos[monster.type] = monster.position;
         }
         
         //moving down
-        else if(dragY - buff > monster.y && this.getValueAt(monster.position[0]+1, monster.position[1]) == monster.type && monster.movable == true){
+        else if(dragY - buff > monster.y && this.getValueAt(monster.position[0]+1, monster.position[1]) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0]+1, monster.position[1]])) == -1){
             console.log("down");
             let newPosition = [monster.position[0]+1, monster.position[1]];
             this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
             monster.y += 80;
             monster.position = newPosition;
+            this.monsterPos[monster.type] = monster.position;
+
 
 
         }
 
         //moving left
-        else if(dragX+ buff < monster.x && this.getValueAt(monster.position[0], monster.position[1]-1) == monster.type && monster.movable == true){
+        else if(dragX+ buff < monster.x && this.getValueAt(monster.position[0], monster.position[1]-1) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0], monster.position[1]-1])) == -1){
             console.log("left");
             let newPosition = [monster.position[0], monster.position[1]-1];
             this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
 
             monster.x -= 80;
             monster.position = newPosition;
+            this.monsterPos[monster.type] = monster.position;
 
         }
 
         //moving up
-        else if(dragY+buff < monster.y && this.getValueAt(monster.position[0]-1, monster.position[1]) == monster.type && monster.movable == true){
+        else if(dragY+buff < monster.y && this.getValueAt(monster.position[0]-1, monster.position[1]) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0]-1, monster.position[1]])) == -1){
             console.log("up");
             let newPosition = [monster.position[0]-1, monster.position[1]];
             this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
 
             monster.y -= 80;
             monster.position = newPosition;
+            this.monsterPos[monster.type] = monster.position;
 
 
         }
