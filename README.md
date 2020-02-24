@@ -1,6 +1,6 @@
-# New_puzzle
+# Thesis Puzzle
 
-A phaser3 prototype for my new puzzle idea.
+This is a puzzle game where you use the abuility to swap colors to traverse twords a goal.
 
 The goal of this puzzle is to move each monster to the star with the same color. Each monster can only move on its own color. You can swap the colors a limited ammount of time per level. (example of swap: Make all red squares blue)
 
