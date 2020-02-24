@@ -50,14 +50,19 @@ class playGame extends Phaser.Scene{
             items: 3,
         });
 
+        // localStorage.setItem(gameOptions.localStorageName,JSON.stringify({
+        //         CurrentLevel: 0,
+        //         MaxLevelSolved: 1
+        //     }));
 
         this.savedData = localStorage.getItem(gameOptions.localStorageName) == null ? {
-            level: 0
+            CurrentLevel: 0,
+            MaxLevelSolved:0
         } : JSON.parse(localStorage.getItem(gameOptions.localStorageName));
 
-        console.log(this.savedData.level);
-        // this.GameLogic.levelnum = this.savedData.level;
-        this.GameLogic.levelnum = 0;
+        this.GameLogic.maxLevelSolved = this.savedData.MaxLevelSolved;
+        this.GameLogic.levelnum = this.savedData.CurrentLevel;
+        // this.GameLogic.levelnum = 0;
         this.GameLogic.generateBoard();
         this.drawField();
         this.buttons();
@@ -71,6 +76,7 @@ class playGame extends Phaser.Scene{
         this.drawField();
         this.buttons();
         this.monsters();
+        console.log(this.sprites);
     }
     
     drawField(){
@@ -92,24 +98,41 @@ class playGame extends Phaser.Scene{
         let button1 = this.add.sprite(game.config.width / 2-165, game.config.height - 200, 'button').setInteractive();
         this.sprites.push(button1);
         
-        let rbText = this.add.text(game.config.width / 2 - 245, game.config.height - 220, "swap R-B", { font: '35px Arial', color: '0x222222' });
+        let rbText = this.add.text(game.config.width / 2 - 245, game.config.height - 220, "Swap R-B", { font: '35px Arial', color: '0x222222' });
 
 
         let button2 = this.add.sprite(game.config.width / 2 + 48, game.config.height - 200, 'button').setInteractive();
         this.sprites.push(button2);
 
-        let ryText = this.add.text(game.config.width / 2 - 25, game.config.height - 220, "swap R-Y", { font: '35px Arial', color: '0x222222' });
+        let ryText = this.add.text(game.config.width / 2 - 25, game.config.height - 220, "Swap R-Y", { font: '35px Arial', color: '0x222222' });
     
            
         let button3 = this.add.sprite(game.config.width / 2 + 260, game.config.height - 200, 'button').setInteractive();
         this.sprites.push(button3);
 
-        let ybText = this.add.text(game.config.width / 2 + 185, game.config.height - 220, "swap Y-B", { font: '35px Arial', color: '0x222222' });
+        let ybText = this.add.text(game.config.width / 2 + 185, game.config.height - 220, "Swap Y-B", { font: '35px Arial', color: '0x222222' });
     
 
         let swapText = this.add.text(game.config.width/ 2 - 220, game.config.height/5 - 100, "Swaps Left: ", { font: '90px Arial', fill: '#BDBDBD'});
         this.sprites.push(swapText);
         this.GameLogic.displaySwap(swapText);
+
+        let prev = this.add.sprite(game.config.width/ 2 - 165, game.config.height/5 + 50, 'button').setInteractive();
+        this.sprites.push(prev);
+
+        let prevText = this.add.text(game.config.width/2 - 255, game.config.height/5 + 30, "Previos Level", { font: '30px Arial', color: '0x222222' });
+
+        let reset = this.add.sprite(game.config.width / 2 + 48, game.config.height/5 + 50, 'button').setInteractive();
+        this.sprites.push(reset);
+
+        let resetText = this.add.text(game.config.width/2 - 30, game.config.height/5 + 30, "Reset Level", { font: '30px Arial', color: '0x222222' });
+
+
+        let next = this.add.sprite(game.config.width/ 2 + 260, game.config.height/5 + 50, 'button').setInteractive();
+        this.sprites.push(next);
+        
+        let nextText = this.add.text(game.config.width/2 + 190, game.config.height/5 + 30, "Next Level", { font: '30px Arial', color: '0x222222' });
+        
 
         button1.on('pointerdown', function (pointer) 
         {
@@ -133,8 +156,6 @@ class playGame extends Phaser.Scene{
 
         }, this);
 
-       
-
         button3.on('pointerdown', function (pointer) 
         {
 
@@ -146,7 +167,40 @@ class playGame extends Phaser.Scene{
 
         }, this);
 
+        next.on('pointerdown', function (pointer)
+        {
+            for( let i=0; i < this.sprites.length; i++){
+                this.sprites[i].destroy();
+            }
 
+            this.GameLogic.next();
+
+            this.new(next);
+
+        }, this);
+
+        prev.on('pointerdown', function (pointer)
+        {
+            for( let i=0; i < this.sprites.length; i++){
+                this.sprites[i].destroy();
+            }
+
+            this.GameLogic.prev();
+
+            this.new(prev);
+
+        }, this);
+
+        reset.on('pointerdown', function (pointer)
+        {
+            for( let i=0; i < this.sprites.length; i++){
+                this.sprites[i].destroy();
+            }
+
+            this.GameLogic.reset();
+            this.new(reset);
+
+        }, this);
     }
 
     goal(){
@@ -182,47 +236,51 @@ class playGame extends Phaser.Scene{
         let goals = this.goal();
 
         let goal1 = goals[0];
-
         let goal2 = goals[1];
         let goal3 = goals[2];
 
-        let monster1 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * 3 + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
+
+        let pos1 = this.GameLogic.monsterStartPos[this.GameLogic.levelnum][0];
+        let monster1 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos1[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos1[0] + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
         this.sprites.push(monster1);
 
-
-        monster1.setTint(0x2ca7b2);
-        monster1.depth = monster1.x + monster1.y;
-        monster1.position = [3, -1];
-        monster1.type = 2;
-        monster1.goalPos = goal1.position;
+        monster1.setTint(0xf7c83b);
+        monster1.depth = 2;
+        monster1.position = pos1;
+        monster1.type = 1;
+        monster1.goalPos = goal3.position;
         monster1.movable = true;
+        monster1.atGoal = false;
         monster1.win = false;
 
-        let monster2 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * 1 + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
+        let pos2 = this.GameLogic.monsterStartPos[this.GameLogic.levelnum][1];
+        let monster2 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos2[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos2[0] + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
         this.sprites.push(monster2);
 
-
-        monster2.setTint(0xe84e4e);
-        monster2.depth = monster2.x + monster2.y;
-        monster2.position = [1, -1];
-        monster2.type = 3;
-        monster2.goalPos = goal2.position;
+        monster2.setTint(0x2ca7b2);
+        monster2.depth = 2;
+        monster2.position = pos2;
+        monster2.type = 2;
+        monster2.goalPos = goal1.position;
         monster2.movable = true;
+        monster2.atGoal = false;
         monster2.win = false;
 
-        let monster3 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * 5 + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
+        let pos3 = this.GameLogic.monsterStartPos[this.GameLogic.levelnum][2];
+        console.log(this.GameLogic.monsterPos);
+        let monster3 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos3[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos3[0] + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
         this.sprites.push(monster3);
 
-
-        monster3.setTint(0xf7c83b);
-        monster3.depth = monster3.x + monster3.y;
-        monster3.position = [5, -1];
-        monster3.type = 1;
-        monster3.goalPos = goal3.position;
+        monster3.setTint(0xe84e4e);
+        monster3.depth = 2;
+        monster3.position = pos3;
+        monster3.type = 3;
+        monster3.goalPos = goal2.position;
         monster3.movable = true;
+        monster3.atGoal = false;
         monster3.win = false;
 
-
+        this.GameLogic.monsterPos = [monster1.position, monster2.position, monster3.position];
 
 
         monster1.on('drag', function (pointer, dragX, dragY) {
@@ -293,8 +351,6 @@ class playGame extends Phaser.Scene{
     // }
 
     next(monsters){
-
-
         
         if(this.GameLogic.checkEnd()){
             let winText = this.add.text(game.config.width / 2 - 75, game.config.height /2, "YOU WIN!", { font: '55px Arial', color: '0x222222' });
@@ -306,18 +362,12 @@ class playGame extends Phaser.Scene{
             this.sprites.push(nextButton);
             this.sprites.push(nextText);
 
-            console.log(this.sprites);
-
-
             nextButton.on('pointerdown', function (pointer)
             {
-
 
                 for( let i=0; i < this.sprites.length; i++){
                     this.sprites[i].destroy();
                 }
-
-                console.log(this.sprites);
 
                 this.GameLogic.next();
 
@@ -341,20 +391,23 @@ class GameLogic{
         this.items = (obj.items != undefined) ? obj.items : 3;
         this.goalsReached = 0;
 
-        this.swaps = [5, 4, 10];
+        this.swapAmmounts = [5, 4, 10];
+        this.swaps = null;
         this.leveltest = [[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1]];
         this.level1 = [[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3]];
         this.level2 = [[1,1,2,2,3,3],[2,2,2,2,3,3],[3,3,2,2,1,1],[1,1,2,2,3,3],[1,1,1,1,3,3],[1,1,2,2,3,3]];
         this.level3 = [[2,1,2,1,3,3],[1,2,2,2,1,3],[3,3,1,2,1,2],[1,1,2,1,3,1],[1,3,1,3,2,3],[1,2,1,2,1,3]];
 
         this.levelnum = 0;
+        this.maxLevelSolved = 0;
         // this.levels = [this.leveltest,this.level1, this.level2, this.level3]
-        this.levels = [this.level1, this.level2, this.level3]
+        this.levels = [this.level1, this.level2, this.level3];
 
-        this.levels.goals = [[[1, 5], [5, 5],[0, 2]],[[1, 6], [5, 6],[-1, 2]],[[1, 6], [5, 6],[-1, 2]]]
+        this.levels.goals = [[[1, 5], [5, 5],[0, 2]],[[1, 5], [5, 5],[0, 2]],[[1, 5], [5, 5],[0, 2]]];
 
         this.totallevels = 2; // levelnum starts at 0 
-        this.monsterPos = [[5, -1],[3, -1],[1, -1]]
+        this.monsterStartPos = [ [ [5, 0],[3, 0],[1, 0] ], [ [5, -1],[3, -1],[1, -1] ], [ [5, -1],[3, -1],[1, -1] ] ];
+        this.monsterPos = null;
     }
 
     // generates the game board from the levels
@@ -377,31 +430,24 @@ class GameLogic{
 
     swapColors(c1, c2, swapText){
 
-        console.log(this.swaps[this.levelnum]);
+        console.log(this.swaps);
         
-        if(this.swaps[this.levelnum] > 0){
+        if(this.swaps > 0){
             for(let i=0; i < this.columns; i ++){
                 for(let j = 0; j < this.rows; j ++){
 
-
-                    // if(this.gameArray[i][j].value == c1 && this.gameArray[i][j].piece == 0){
-                    //     this.gameArray[i][j].value = c2                    
-                    // }
-                     if(this.gameArray[i][j].value == c1){
+                    if(this.gameArray[i][j].value == c1){
                         this.gameArray[i][j].value = c2                    
                     }
+
                     else if(this.gameArray[i][j].value == c2){
                         this.gameArray[i][j].value = c1
                     }
 
-
-                    // else if(this.gameArray[i][j].value == c2 && this.gameArray[i][j].piece == 0){
-                    //     this.gameArray[i][j].value = c1
-                    // }
                 }
             }
 
-            this.swaps[this.levelnum] -=1;
+            this.swaps -=1;
 
         }
         
@@ -409,7 +455,11 @@ class GameLogic{
     }
 
     displaySwap(swapText){
-        swapText.setText('Swaps Left: ' + this.swaps[this.levelnum]);
+        if(this.swaps == null){
+            this.swaps = this.swapAmmounts[this.levelnum]
+        }
+
+        swapText.setText('Swaps Left: ' + this.swaps);
 
     }
 
@@ -455,93 +505,22 @@ class GameLogic{
     }
 
     checkGoal(monster, dragX, dragY, buff){
-        console.log(monster.goalPos);
-        console.log(this.getValueAt(monster.goalPos[0], monster.goalPos[1]));
-        console.log("monster type:", monster.type);
-        if(dragX - buff > monster.x && monster.movable == true && this.getValueAt(monster.goalPos[0], monster.goalPos[1]) == monster.type){                
-                let newPosition = [monster.position[0], monster.position[1]+1];
 
-                
-                if(this.compareArray(newPosition, monster.goalPos)){
-                    console.log("YAY");
-                    monster.x += 80;
-                    monster.movable = false;
-                    monster.setInteractive({ draggable: false });
-                    monster.atGoal = true;
-                    return true;
-                }
-                
-            }
-        if(dragY-buff > monster.y && monster.movable == true && this.getValueAt(monster.goalPos[0], monster.goalPos[0]) == monster.type){
-            let newPosition = [monster.position[0]+1, monster.position[1]];
-            if(this.compareArray(newPosition, monster.goalPos)){
-                console.log("YAY");
-                monster.y += 80;
-                monster.movable = false;
-                monster.setInteractive({ draggable: false });
-                monster.atGoal = true;
-                return true;
-            }
-            
+        if(this.compareArray(monster.position, monster.goalPos) && monster.atGoal == false){
+            console.log("YAY");
+            monster.movable = false;
+            monster.setInteractive({ draggable: false });
+            monster.atGoal = true;
+            monster.setTint(0x4ee84e);
+            return true;
         }
-
-        if(dragX+(2*buff) < monster.x && monster.movable == true && this.getValueAt(monster.goalPos[0], monster.goalPos[0]) == monster.type){
-            
-            let newPosition = [monster.position[0], monster.position[1]-1];
-            
-            if(this.compareArray(newPosition, monster.goalPos)){
-                    console.log("YAY");
-                monster.x -= 80;
-                monster.movable = false;
-
-                monster.setInteractive({ draggable: false });
-                monster.atGoal = true;
-                return true;
-            }
-
-        }
-        if(dragY+buff < monster.y && monster.movable == true && this.getValueAt(monster.goalPos[0], monster.goalPos[0]) == monster.type){
-            
-            let newPosition = [monster.position[0]-1, monster.position[1]];
-            if(this.compareArray(newPosition, monster.goalPos)){
-                console.log("YAY");
-                monster.y -= 80;
-                monster.movable = false;
-                monster.setInteractive({ draggable: false });
-                monster.atGoal = true;
-                return true;
-            }
-
-
-
-        }
-        monster.depth = monster.x + monster.y;
         return false;
 
     }
 
-    monsterMove(monster, dragX, dragY, buff){
-        // let test = [[5, -1],[3, -1],[1, -1]];
-        // let test2 = [5, 1];
-        // let temp = JSON.stringify(test);
-        // let temp2 = JSON.stringify(test2);
-
-        // console.log(temp.indexOf(temp2));
-        
-        // console.log(this.monsterPos.includes([monster.position[0], monster.position[1]+1]));
-        
-        if(this.checkGoal(monster, dragX, dragY, buff)){
-            console.log("goal reached");
-
-            this.goalsReached ++;
-
-            if(this.goalsReached == 3){
-                monster.win = true;
-            }
-            
-        }
+    monsterMove(monster, dragX, dragY, buff){ 
         //moving right        
-        else if(dragX - buff > monster.x && this.getValueAt(monster.position[0], monster.position[1]+1) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0], monster.position[1]+1])) == -1){
+        if(dragX - buff > monster.x && this.getValueAt(monster.position[0], monster.position[1]+1) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0], monster.position[1]+1])) == -1){
                 console.log("right")
                 let newPosition = [monster.position[0], monster.position[1]+1];
                 this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
@@ -587,7 +566,25 @@ class GameLogic{
 
 
         }
-        monster.depth = monster.x + monster.y;
+
+        if(this.checkGoal(monster, dragX, dragY, buff)){
+            console.log("goal reached");
+
+            this.goalsReached ++;
+
+            if(this.goalsReached == 3){
+                monster.win = true;
+                this.maxLevelSolved += 1;
+
+                localStorage.setItem(gameOptions.localStorageName,JSON.stringify({
+                    CurrentLevel: this.levelnum,
+                    MaxLevelSolved: this.maxLevelSolved
+                }));
+            }
+            
+        }
+
+        // monster.depth = monster.x + monster.y;
     }
 
 
@@ -606,16 +603,39 @@ class GameLogic{
     }
 
     next(){
-        if(this.levelnum < this.totallevels){
+        if(this.levelnum < this.totallevels && this.levelnum < this.maxLevelSolved){
             this.levelnum ++;
-
             localStorage.setItem(gameOptions.localStorageName,JSON.stringify({
-                level: this.levelnum
+                CurrentLevel: this.levelnum,
+                MaxLevelSolved: this.maxLevelSolved
+
             }));
 
             this.goalsReached = 0;
+            this.swaps = this.swapAmmounts[this.levelnum];
+
     
         }
+    }
+
+    prev(){
+        if(this.levelnum > 0){
+            this.levelnum --;
+            localStorage.setItem(gameOptions.localStorageName,JSON.stringify({
+                CurrentLevel: this.levelnum,
+                MaxLevelSolved: this.maxLevelSolved
+            }));
+
+            this.goalsReached = 0;
+            this.swaps = this.swapAmmounts[this.levelnum];
+    
+        }
+
+    }
+
+    reset(){
+        this.goalsReached = 0;
+        this.swaps = this.swapAmmounts[this.levelnum];
     }
 
     checkEnd(){
