@@ -58,7 +58,7 @@ class playGame extends Phaser.Scene{
         //         MaxLevelSolved: 1
         //     }));
 
-        this.savedData = localStorage.getItem(gameOptions.localStorageName) == null ? {
+        this.savedData = localStorage.getItem(gameOptions.localStorageName) == null || localStorage.getItem(gameOptions.localStorageName).length != 2 ? {
             CurrentLevel: 0,
             MaxLevelSolved:0
         } : JSON.parse(localStorage.getItem(gameOptions.localStorageName));
