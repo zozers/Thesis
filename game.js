@@ -1,3 +1,4 @@
+import LevelInfo from './assets/levels.js'
 let game;
 let gameOptions = {
     gemSize: 80,
@@ -64,10 +65,21 @@ class playGame extends Phaser.Scene{
         }
 
 
+
         this.savedData = JSON.parse(localStorage.getItem(gameOptions.localStorageName));
 
         this.GameLogic.maxLevelSolved = this.savedData.MaxLevelSolved;
         this.GameLogic.levelnum = this.savedData.CurrentLevel;
+
+        let obj = this.GameLogic.levelInfo.get_level(this.GameLogic.levelnum);
+        console.log(obj);
+
+        this.GameLogic.currentLevelBoard = obj.boardInfo;
+
+        this.GameLogic.currentLevelGoals = obj.GoalPos;
+        this.GameLogic.currentLevelMonsters = obj.MonsterPos;
+
+        this.GameLogic.swaps = obj.Swaps;
 
         console.log("local storage", this.savedData);
 
@@ -84,6 +96,15 @@ class playGame extends Phaser.Scene{
     new(button){
         button.destroy();
         this.sprites = [];
+
+        let obj = this.GameLogic.levelInfo.get_level(this.GameLogic.levelnum);
+        console.log(obj);
+        this.GameLogic.currentLevelBoard = obj.boardInfo;
+        this.GameLogic.currentLevelGoals = obj.GoalPos;
+        this.GameLogic.currentLevelMonsters = obj.MonsterPos;
+        this.GameLogic.swaps = obj.Swaps;
+
+
         this.GameLogic.generateBoard();
         this.drawField();
         this.buttons();
@@ -232,14 +253,14 @@ class playGame extends Phaser.Scene{
 
     goal(){
 
-        let pos1 = this.GameLogic.levels.goals[this.GameLogic.levelnum][0];
+        let pos1 = this.GameLogic.currentLevelGoals[0];
         let goal1 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos1[1]+1) +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos1[0] + gameOptions.gemSize / 2, 'star');
         goal1.setDepth(1);
         goal1.setTint(0x2ca7b2);
         goal1.position = pos1;
         this.sprites.push(goal1);
 
-        let pos2 = this.GameLogic.levels.goals[this.GameLogic.levelnum][1];
+        let pos2 = this.GameLogic.currentLevelGoals[1];
         console.log(pos2);
         let goal2 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos2[1]+1) +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos2[0] + gameOptions.gemSize / 2, 'star');
         goal2.setDepth(1);
@@ -247,7 +268,7 @@ class playGame extends Phaser.Scene{
         goal2.position = pos2;
         this.sprites.push(goal2);
 
-        let pos3 =  this.GameLogic.levels.goals[this.GameLogic.levelnum][2];
+        let pos3 =  this.GameLogic.currentLevelGoals[2];
         let goal3 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos3[1]+1) +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos3[0] + gameOptions.gemSize / 2, 'star');
         goal3.setDepth(1);
         goal3.setTint(0xf7c83b);
@@ -266,7 +287,7 @@ class playGame extends Phaser.Scene{
         let goal3 = goals[2];
 
 
-        let pos1 = this.GameLogic.monsterStartPos[this.GameLogic.levelnum][0];
+        let pos1 = this.GameLogic.currentLevelMonsters[0];
         let monster1 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos1[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos1[0] + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
         this.sprites.push(monster1);
 
@@ -279,7 +300,7 @@ class playGame extends Phaser.Scene{
         monster1.atGoal = false;
         monster1.win = false;
 
-        let pos2 = this.GameLogic.monsterStartPos[this.GameLogic.levelnum][1];
+        let pos2 = this.GameLogic.currentLevelMonsters[1];
         let monster2 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos2[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos2[0] + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
         this.sprites.push(monster2);
 
@@ -292,7 +313,7 @@ class playGame extends Phaser.Scene{
         monster2.atGoal = false;
         monster2.win = false;
 
-        let pos3 = this.GameLogic.monsterStartPos[this.GameLogic.levelnum][2];
+        let pos3 = this.GameLogic.currentLevelMonsters[2];
         let monster3 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos3[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos3[0] + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
         this.sprites.push(monster3);
 
@@ -377,6 +398,7 @@ class playGame extends Phaser.Scene{
         
 
 }
+
 class GameLogic{
 
     // constructor, simply turns obj information into class properties
@@ -389,25 +411,20 @@ class GameLogic{
         this.items = (obj.items != undefined) ? obj.items : 3;
         this.goalsReached = 0;
 
-        this.swapAmmounts = [5, 4, 10, 5];
+        this.currentLevelBoard = null;
+        this.currentLevelGoals = null;
+        this.currentLevelMonsters = null;
+
         this.swaps = null;
-        this.leveltest = [[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1]];
-        this.level1 = [[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3]];
-        this.level2 = [[1,1,2,2,3,3],[2,2,2,2,3,3],[3,3,2,2,1,1],[1,1,2,2,3,3],[1,1,1,1,3,3],[1,1,2,2,3,3]];
-        this.level3 = [[2,1,2,1,3,3],[1,2,2,2,1,3],[3,3,1,2,1,2],[1,1,2,1,3,1],[1,3,1,3,2,3],[1,2,1,2,1,3]];
+
+        this.levelInfo = new LevelInfo();
         this.levelnum = 0;
         this.maxLevelSolved = 0;
-        // this.levels = [this.leveltest,this.level1, this.level2, this.level3]
-        this.levels = [this.level1, this.level2, this.level3];
-
-        this.levels.goals = [ [ [1, 5], [5, 5],[0, 2] ], [ [1, 5], [5, 5],[0, 2] ] , [ [1, 5], [5, 5],[0, 2] ] ];
 
         this.totallevels = 2; // levelnum starts at 0 
-        this.monsterStartPos = [ [ [5, 0],[3, 0],[1, 0] ], [ [5, 0],[3, 0],[1, 0] ], [ [5, 0],[3, 0],[1, 0] ] ];
         this.monsterPos = null;
 
-        // this.canNext = false;
-        // this.canPrev = false;
+
     }
 
     // generates the game board from the levels
@@ -416,7 +433,7 @@ class GameLogic{
         for(let i = 0; i < this.rows; i ++){
             this.gameArray[i] = [];
             for(let j = 0; j < this.columns; j ++){
-                let Value = this.levels[this.levelnum][i][j];
+                let Value = this.currentLevelBoard[i][j];
                 this.gameArray[i][j] = {
                     value: Value,
                     row: i,
@@ -456,7 +473,7 @@ class GameLogic{
 
     displaySwap(swapText){
         if(this.swaps == null){
-            this.swaps = this.swapAmmounts[this.levelnum]
+            this.swaps = this.levelInfo.get_level(this.levelnum).Swaps;
         }
 
         swapText.setText('Swaps Left: ' + this.swaps);
@@ -615,9 +632,7 @@ class GameLogic{
             }));
 
             this.goalsReached = 0;
-            this.swaps = this.swapAmmounts[this.levelnum];
-
-    
+            this.swaps = this.levelInfo.get_level(this.levelnum).Swaps;
         }
     }
 
@@ -630,7 +645,7 @@ class GameLogic{
             }));
 
             this.goalsReached = 0;
-            this.swaps = this.swapAmmounts[this.levelnum];
+            this.swaps = this.levelInfo.get_level(this.levelnum).Swaps;
     
         }
 
@@ -638,7 +653,7 @@ class GameLogic{
 
     reset(){
         this.goalsReached = 0;
-        this.swaps = this.swapAmmounts[this.levelnum];
+        this.swaps = this.levelInfo.get_level(this.levelnum).Swaps;
     }
 
     checkEnd(){
