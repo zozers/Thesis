@@ -58,17 +58,22 @@ class playGame extends Phaser.Scene{
         //         MaxLevelSolved: 1
         //     }));
 
-        this.savedData = localStorage.getItem(gameOptions.localStorageName) == null || localStorage.getItem(gameOptions.localStorageName).length != 2 ? {
-            CurrentLevel: 0,
-            MaxLevelSolved:0
-        } : JSON.parse(localStorage.getItem(gameOptions.localStorageName));
+        if(localStorage.getItem(gameOptions.localStorageName) == null || localStorage.getItem(gameOptions.localStorageName).length != 2){
+            localStorage.setItem(gameOptions.localStorageName,JSON.stringify({
+                CurrentLevel: 0,
+                MaxLevelSolved: 0
+
+            }));
+        }
+
+        this.savedData = JSON.parse(localStorage.getItem(gameOptions.localStorageName));
 
         this.GameLogic.maxLevelSolved = this.savedData.MaxLevelSolved;
         this.GameLogic.levelnum = this.savedData.CurrentLevel;
 
         console.log(this.GameLogic.maxLevelSolved);
         console.log(this.GameLogic.levelnum);
-               
+
         // this.GameLogic.levelnum = 0;
         this.GameLogic.generateBoard();
         this.drawField();
