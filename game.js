@@ -3,7 +3,7 @@ let game;
 let gameOptions = {
     gemSize: 80,
     boardOffset: {
-        x: 680,
+        x: 130,
         y: 320
     },
     localStorageName: "ThesisGameLogic"
@@ -17,7 +17,7 @@ window.onload = function() {
             mode: Phaser.Scale.FIT,
             autoCenter: Phaser.Scale.CENTER_BOTH,
             parent: "thegame",
-            width: 1920,
+            width: 800,
             height: 1080
         },
         scene: playGame
