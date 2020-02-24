@@ -66,10 +66,13 @@ class playGame extends Phaser.Scene{
             }));
         }
 
+
         this.savedData = JSON.parse(localStorage.getItem(gameOptions.localStorageName));
 
         this.GameLogic.maxLevelSolved = this.savedData.MaxLevelSolved;
         this.GameLogic.levelnum = this.savedData.CurrentLevel;
+
+        console.log("local storage", this.savedData);
 
         console.log(this.GameLogic.maxLevelSolved);
         console.log(this.GameLogic.levelnum);
