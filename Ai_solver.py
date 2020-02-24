@@ -261,7 +261,7 @@ def convertLevelDataToState(level_data, monster_pos):
 
 
 def rankPerm(perm):    
-    return str(perm)
+	return str(perm)
 
 		
 
@@ -274,7 +274,7 @@ if __name__ == "__main__":
 	
 	solved = 0
 	
-	maxTime = 100
+	maxTime = 200
 	numTests = 3
 
 	
@@ -301,21 +301,20 @@ if __name__ == "__main__":
 	for i in range(numTests):
 
 
-		print("\nRunning test " + str(1) + " out of " + str(numTests))
+		print("\nRunning test " + str(i+1) + " out of " + str(numTests))
 		printBoard(state3)
 		
 		[runTime, path] = AStar([states[i]], goals, neighbors, isGoal, doNothing, heuristicMedium)
 		if runTime == -1:
-		    print("no solution found")
+			print("no solution found")
 		else:
-		    print("solution\n")
-		    for i in path:
-		    	printBoard(i)
+			print("solution\n")
+			for i in path:
+				printBoard(i)
 
-		    print(count_swaps(path))
-
-		print("solved in " + str(len(path)-1) + " moves")
-		print("solved in " + str(runTime) + " seconds")
+			print(count_swaps(path))
+			print("solved in " + str(len(path)-1) + " moves")
+			print("solved in " + str(runTime) + " seconds")
 			
 
 
