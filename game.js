@@ -54,7 +54,7 @@ class playGame extends Phaser.Scene{
         });
 
 
-        if(localStorage.getItem(gameOptions.localStorageName) == null || localStorage.getItem(gameOptions.localStorageName).length != 2){
+        if(localStorage.getItem(gameOptions.localStorageName) == null || Object.keys(JSON.parse(localStorage.getItem(gameOptions.localStorageName))).length != 2){
             console.log("Back to zero");
             localStorage.setItem(gameOptions.localStorageName,JSON.stringify({
                 CurrentLevel: 0,
@@ -519,22 +519,25 @@ class GameLogic{
     }
 
     monsterMove(monster, dragX, dragY, buff){ 
-        //moving right        
+        //moving right 
         if(dragX - buff > monster.x && this.getValueAt(monster.position[0], monster.position[1]+1) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0], monster.position[1]+1])) == -1){
+                console.log("right");      
                 let newPosition = [monster.position[0], monster.position[1]+1];
                 this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
                 monster.x += 80;
                 monster.position = newPosition;
-                this.monsterPos[monster.type] = monster.position;
+                console.log(monster.position);
+                this.monsterPos[monster.type - 1] = monster.position;
         }
         
-        //moving down
+        //moving down       
         else if(dragY - buff > monster.y && this.getValueAt(monster.position[0]+1, monster.position[1]) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0]+1, monster.position[1]])) == -1){
+            console.log("down");
             let newPosition = [monster.position[0]+1, monster.position[1]];
             this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
             monster.y += 80;
             monster.position = newPosition;
-            this.monsterPos[monster.type] = monster.position;
+            this.monsterPos[monster.type - 1] = monster.position;
 
 
 
@@ -542,23 +545,25 @@ class GameLogic{
 
         //moving left
         else if(dragX+ buff < monster.x && this.getValueAt(monster.position[0], monster.position[1]-1) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0], monster.position[1]-1])) == -1){
+            console.log("left");
             let newPosition = [monster.position[0], monster.position[1]-1];
             this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
 
             monster.x -= 80;
             monster.position = newPosition;
-            this.monsterPos[monster.type] = monster.position;
+            this.monsterPos[monster.type - 1] = monster.position;
 
         }
 
         //moving up
         else if(dragY+buff < monster.y && this.getValueAt(monster.position[0]-1, monster.position[1]) == monster.type && monster.movable == true && JSON.stringify(this.monsterPos).indexOf(JSON.stringify([monster.position[0]-1, monster.position[1]])) == -1){
+            console.log("up");    
             let newPosition = [monster.position[0]-1, monster.position[1]];
             this.movePiece(monster.position[0], monster.position[1], newPosition[0], newPosition[1]);
 
             monster.y -= 80;
             monster.position = newPosition;
-            this.monsterPos[monster.type] = monster.position;
+            this.monsterPos[monster.type - 1] = monster.position;
 
 
         }
