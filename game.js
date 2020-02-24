@@ -53,12 +53,7 @@ class playGame extends Phaser.Scene{
             items: 3,
         });
 
-        // localStorage.setItem(gameOptions.localStorageName,JSON.stringify({
-        //         CurrentLevel: 0,
-        //         MaxLevelSolved: 1
-        //     }));
 
-        console.log("local storage length", Object.keys(JSON.parse(localStorage.getItem(gameOptions.localStorageName))).length);
         if(localStorage.getItem(gameOptions.localStorageName) == null || localStorage.getItem(gameOptions.localStorageName).length != 2){
             console.log("Back to zero");
             localStorage.setItem(gameOptions.localStorageName,JSON.stringify({
