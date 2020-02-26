@@ -246,16 +246,16 @@ def generate_level(width, height):
 	level_data = []
 
 	for i in range(3):
-		temp1 = [random.randrange(0, 5), random.randrange(0, 5)]
+		temp1 = [random.randrange(0, 6), random.randrange(0, 6)]
 
 		while temp1 in monster:
-			temp1 = [random.randrange(0, 5), random.randrange(0, 5)]
+			temp1 = [random.randrange(0, 6), random.randrange(0, 6)]
 		
 		monster.append(temp1)
 		
-		temp2 = (random.randrange(0, 5), random.randrange(0, 5))
+		temp2 = (random.randrange(0, 6), random.randrange(0, 6))
 		while temp2 in goal:
-			temp2 = (random.randrange(0, 5), random.randrange(0, 5))
+			temp2 = (random.randrange(0, 6), random.randrange(0, 6))
 		goal.append(temp2)
 	
 	for row in range(width):
@@ -264,9 +264,62 @@ def generate_level(width, height):
 			temp.append(random.randrange(1,4))
 		level_data.append(temp)
 	print("level_data",level_data)
+	print("\n")
+	print("monster_data",monster)
+	print("\n")
+	print("goal_data", goal)
 	return [level_data, monster, goal]
 
+def generate_moves(path):
+	moves = []
+	monsters_start = find_monsters(path[0])
+	past_state = path[0]
+	
+	for state in path[1:]:
+		monsters_current = find_monsters(state)
+		swaped = False
+		for monster in monsters_current:
+			monster_moved = False
+			
+			for monster1 in monsters_start:
+				(i, j, monster_type) = monster
+				(row, col, monster_type2) = monster1
+				if(monster_type == monster_type2):
+					if(row - i > 0):
+						monster_moved = True
+						moves.append([monster_type, "u"])
+					if(row - i < 0):
+						monster_moved = True
+						moves.append([monster_type, "d"])
+					if(col - j > 0):
+						monster_moved = True
+						moves.append([monster_type, "l"])
+					if(col - j < 0):
+						monster_moved = True
+						moves.append([monster_type, "r"])
+					
+				if(monster_moved == False):
+					for i in range(len(state)):
+						for j in range(len(state[0])):
+							if(swaped == True):
+								break
+							(_, tile1) = state[i][j]
+							(_, tile2) = past_state[i][j]
+							if(tile1 != tile2):
+								print(swaped)
+								print([[tile1, tile2], "s"])
+								moves.append([[tile1, tile2], "s"])
+								swaped = True
+								
+						if(swaped == True):
+							break
 
+		monsters_start = monsters_current
+		past_state = state
+
+	return moves
+
+	
 
 
 
@@ -304,25 +357,26 @@ if __name__ == "__main__":
 
 	state3 = convertLevelDataToState([[2,1,2,1,3,3],[1,2,2,2,1,3],[3,3,1,2,1,2],[1,1,2,1,3,1],[1,3,1,3,2,3],[1,2,1,2,1,3]], [ [5, 0],[3, 0],[1, 0] ])
 
-	state4 = generate_level(6, 6)
+	# state4 = generate_level(6, 6)
 
-	print("monster",state4[1])
+	# print("monster",state4[1])
 
 
 	# states = [state1, state2, state3, convertLevelDataToState(state4[0], state4[1])]
-	states = [convertLevelDataToState(state4[0], state4[1])]
-	goals = state4[2]
+	# goals = state4[2]
 
-	print("goals",goals)
-	# goals = [(0, 2),(1, 5), (5, 5)]
+	# print("goals",goals)
+	goals = [(0, 2),(1, 5), (5, 5)]
 
+	# levels123 = []
 	for i in range(numTests):
-
-
+		# state = generate_level(6,6)
+		# levels123.append(state)
 		print("\nRunning test " + str(i+1) + " out of " + str(numTests))
-		printBoard(states[i])
+		# printBoard(convertLevelDataToState(state[0], state[1]))
+		printBoard(state3)
 		
-		[runTime, path] = AStar([states[i]], goals, neighbors, isGoal, doNothing, heuristicMedium)
+		[runTime, path] = AStar([state3], goals, neighbors, isGoal, doNothing, heuristicMedium)
 		if runTime == -1:
 			print("no solution found")
 		else:
@@ -342,6 +396,7 @@ if __name__ == "__main__":
 			solved30 += 1
 		if runTime <= 5: 
 			solved5 += 1
+
 	print("Total Solved:" + str(solved)+"\n")
 	print("\n")
 	print("Number of Swaps per level:", swapNumber)
@@ -349,6 +404,7 @@ if __name__ == "__main__":
 	print("Solved in 5 seconds: " + str(solved5) + "/" + str(numTests))
 	print("Solved in 30 seconds: " + str(solved30) + "/" + str(numTests))
 	print("Solved in 100 seconds: " + str(solved100) + "/" + str(numTests))
+	print(generate_moves(path))
 
 
 

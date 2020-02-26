@@ -6,6 +6,7 @@ let gameOptions = {
         x: 80,
         y: 320
     },
+
     localStorageName: "ThesisGameLogic"
 }
 
@@ -31,8 +32,11 @@ class playGame extends Phaser.Scene{
     constructor(){
         super("PlayGame");
         this.sprites = [];
-
+        this.monsterArr = [];
+        this.aiTiles = [];
+        this.aiTimeline;
     }
+
     preload(){
         this.load.spritesheet("tiles", "assets/sprites/tiles.png", {
             frameWidth: gameOptions.gemSize,
@@ -44,9 +48,11 @@ class playGame extends Phaser.Scene{
         this.load.image('yellow_blue', 'assets/sprites/yellow_blue.png');
         this.load.image('monster', 'assets/sprites/monster.png');
         this.load.image('star', 'assets/sprites/star.png');
-
-
+        this.load.image("home", 'assets/sprites/home.png');
+        this.load.image("bar", 'assets/sprites/bar.png');
+        this.load.image("back_arrow", 'assets/sprites/back_arrow.png');
     }
+
     create(){
         this.GameLogic = new GameLogic({
             rows: 6,
@@ -64,52 +70,56 @@ class playGame extends Phaser.Scene{
             }));
         }
 
+        if(this.GameLogic.ai_mode == false){
+            this.savedData = JSON.parse(localStorage.getItem(gameOptions.localStorageName));
+            this.GameLogic.maxLevelSolved = this.savedData.MaxLevelSolved;
+            this.GameLogic.levelnum = this.savedData.CurrentLevel;
 
+        }
 
-        this.savedData = JSON.parse(localStorage.getItem(gameOptions.localStorageName));
-
-        this.GameLogic.maxLevelSolved = this.savedData.MaxLevelSolved;
-        this.GameLogic.levelnum = this.savedData.CurrentLevel;
-
+        
         let obj = this.GameLogic.levelInfo.get_level(this.GameLogic.levelnum);
         console.log(obj);
 
         this.GameLogic.currentLevelBoard = obj.boardInfo;
-
-        this.GameLogic.currentLevelGoals = obj.GoalPos;
         this.GameLogic.currentLevelMonsters = obj.MonsterPos;
-
+        this.GameLogic.currentLevelGoals = obj.GoalPos;
         this.GameLogic.swaps = obj.Swaps;
-
-        console.log("local storage", this.savedData);
-
-        console.log(this.GameLogic.maxLevelSolved);
-        console.log(this.GameLogic.levelnum);
-
-        // this.GameLogic.levelnum = 0;
-        this.GameLogic.generateBoard();
+        this.GameLogic.generateBoard();            
         this.drawField();
         this.buttons();
         this.monsters();
+
+        
+ 
     }
 
     new(button){
-        button.destroy();
-        this.sprites = [];
 
-        let obj = this.GameLogic.levelInfo.get_level(this.GameLogic.levelnum);
-        console.log(obj);
-        this.GameLogic.currentLevelBoard = obj.boardInfo;
-        this.GameLogic.currentLevelGoals = obj.GoalPos;
-        this.GameLogic.currentLevelMonsters = obj.MonsterPos;
-        this.GameLogic.swaps = obj.Swaps;
+        if(this.GameLogic.ai_mode == true){
+            this.GameLogic.generateBoard();
+            this.aidrawField();
+            this.buttons();
+            this.monsters();
+        }
+        else{
+            button.destroy();
+            this.sprites = [];
+
+            let obj = this.GameLogic.levelInfo.get_level(this.GameLogic.levelnum);
+            console.log(obj);
+            this.GameLogic.currentLevelBoard = obj.boardInfo;
+            this.GameLogic.currentLevelGoals = obj.GoalPos;
+            this.GameLogic.currentLevelMonsters = obj.MonsterPos;
+            this.GameLogic.swaps = obj.Swaps;
 
 
-        this.GameLogic.generateBoard();
-        this.drawField();
-        this.buttons();
-        this.monsters();
-        console.log(this.sprites);
+            this.GameLogic.generateBoard();
+            this.drawField();
+            this.buttons();
+            this.monsters();
+        }
+
     }
     
     drawField(){
@@ -122,35 +132,45 @@ class playGame extends Phaser.Scene{
                 this.sprites.push(gem);
             }
         }
-
-
     }
 
     buttons(){
 
-        let button1 = this.add.sprite(game.config.width / 2- 220, game.config.height - 200, 'red_blue').setInteractive();
+        let button1 = this.add.sprite(game.config.width / 2- 220, game.config.height - 200, 'red_blue');
+        console.log(this.GameLogic.ai_mode);
+        if(this.GameLogic.ai_mode == false){
+            console.log(this.GameLogic.ai_mode);
+            button1.setInteractive();
+        }
         this.sprites.push(button1);
         
-        // let rbText = this.add.text(game.config.width / 2 - 245, game.config.height - 220, "Swap R-B", { font: '35px Arial', color: '0x222222' });
-
-
-        let button2 = this.add.sprite(game.config.width / 2 + 0, game.config.height - 200, 'yellow_red').setInteractive();
+        let button2 = this.add.sprite(game.config.width / 2 + 0, game.config.height - 200, 'yellow_red');
+        if(this.GameLogic.ai_mode == false){
+            button2.setInteractive();
+        }
+        
         this.sprites.push(button2);
-
-        // let ryText = this.add.text(game.config.width / 2 - 25, game.config.height - 220, "Swap R-Y", { font: '35px Arial', color: '0x222222' });
     
            
-        let button3 = this.add.sprite(game.config.width / 2 + 220, game.config.height - 200, 'yellow_blue').setInteractive();
+        let button3 = this.add.sprite(game.config.width / 2 + 220, game.config.height - 200, 'yellow_blue');
+        if(this.GameLogic.ai_mode == false){
+            button3.setInteractive();
+        }
         this.sprites.push(button3);
+        let swapText;
+        if(this.GameLogic.ai_mode == false){
+            swapText = this.add.text(game.config.width/ 2 - 250, game.config.height/5 - 130, "Swaps Left: ", { font: '85px Arial', fill: '#BDBDBD'});
+            this.sprites.push(swapText);
+            this.GameLogic.displaySwap(swapText);
 
-        // let ybText = this.add.text(game.config.width / 2 + 185, game.config.height - 220, "Swap Y-B", { font: '35px Arial', color: '0x222222' });
-    
-
-        let swapText = this.add.text(game.config.width/ 2 - 250, game.config.height/5 - 130, "Swaps Left: ", { font: '85px Arial', fill: '#BDBDBD'});
-        this.sprites.push(swapText);
-        this.GameLogic.displaySwap(swapText);
+        }
+        else{
+            swapText = this.add.text(game.config.width/ 2 - 250, game.config.height/5 - 130, "AI Mode!", { font: '85px Arial', fill: '#BDBDBD'});
+            this.sprites.push(swapText);
+        }
 
         let prev = this.add.sprite(game.config.width/ 2 - 220, game.config.height/5 + 30, 'button').setInteractive();
+        
         if(this.GameLogic.levelnum > 0){
             prev.setTint(0xffffff);
         }
@@ -160,16 +180,24 @@ class playGame extends Phaser.Scene{
        
         this.sprites.push(prev);
 
-        let prevText = this.add.text(game.config.width/2 - 310 , game.config.height/5 + 10, "Previos Level", { font: '30px Arial', color: '0x222222' });
-
+        if(this.GameLogic.ai_mode == false){
+            let prevText = this.add.text(game.config.width/2 - 310 , game.config.height/5 + 10, "Previous Level", { font: '28px Arial', color: '0x222222' });
+            this.sprites.push(prevText);
+        }
+        else{
+            let prevText = this.add.text(game.config.width/2 - 310 , game.config.height/5 + 10, "Stop", { font: '28px Arial', color: '0x222222' });
+            this.sprites.push(prevText);
+        }
+        
         let reset = this.add.sprite(game.config.width / 2 , game.config.height/5 + 30, 'button').setInteractive();
         this.sprites.push(reset);
 
         let resetText = this.add.text(game.config.width/2 - 80, game.config.height/5 + 10, "Reset Level", { font: '30px Arial', color: '0x222222' });
+        this.sprites.push(resetText);
 
 
         let next = this.add.sprite(game.config.width/ 2 + 220, game.config.height/5 + 30, 'button').setInteractive();
-        if(this.GameLogic.levelnum < this.GameLogic.maxLevelSolved && this.GameLogic.levelnum < this.GameLogic.totallevels){
+        if(this.GameLogic.levelnum < this.GameLogic.maxLevelSolved && this.GameLogic.levelnum < this.GameLogic.totallevels || this.GameLogic.ai_mode == true){
             next.setTint(0xffffff);
 
         }
@@ -178,10 +206,18 @@ class playGame extends Phaser.Scene{
         }
        
         this.sprites.push(next);
-        
-        let nextText = this.add.text(game.config.width/2 + 150, game.config.height/5 + 10, "Next Level", { font: '30px Arial', color: '0x222222' });
-        
+        if(this.GameLogic.ai_mode == false){
 
+            let nextText = this.add.text(game.config.width/2 + 150, game.config.height/5 + 10, "Next Level", { font: '30px Arial', color: '0x222222' });
+            this.sprites.push(nextText);
+        }
+        else{
+            let nextText = this.add.text(game.config.width/2 + 150, game.config.height/5 + 10, "Start", { font: '30px Arial', color: '0x222222' });
+            this.sprites.push(nextText);
+        }
+
+        // let home = this.add.sprite(game.config.width/2 - 290, game.config.height/5 + 140, "home").setInteractive();
+        // this.sprites.push(home);
         button1.on('pointerdown', function (pointer) 
         {
 
@@ -218,37 +254,65 @@ class playGame extends Phaser.Scene{
         next.on('pointerdown', function (pointer)
         {
             for( let i=0; i < this.sprites.length; i++){
-                this.sprites[i].destroy();
+                    this.sprites[i].destroy();
             }
-
-            this.GameLogic.next();
-
-            this.new(next);
+ 
+            if(this.GameLogic.ai_mode == true){
+                // ai
+                this.GameLogic.reset();
+                this.new(reset);
+                this.aiMovement(this.GameLogic.instructions, this.monsterArr); 
+            }
+            else{
+                this.GameLogic.next();
+                this.new(next);
+            }
 
         }, this);
 
         prev.on('pointerdown', function (pointer)
         {
-            for( let i=0; i < this.sprites.length; i++){
-                this.sprites[i].destroy();
+            if(this.GameLogic.ai_mode == true){
+                this.timeline.stop();
             }
+            else{
 
-            this.GameLogic.prev();
+                for( let i=0; i < this.sprites.length; i++){
+                    this.sprites[i].destroy();
+                }
 
-            this.new(prev);
+                this.GameLogic.prev();
+
+                this.new(prev);
+            }
+            
+
+
 
         }, this);
 
-        reset.on('pointerdown', function (pointer)
-        {
-            for( let i=0; i < this.sprites.length; i++){
-                this.sprites[i].destroy();
-            }
-
-            this.GameLogic.reset();
-            this.new(reset);
+        reset.on('pointerdown', function (pointer){
+        
+        for( let i=0; i < this.sprites.length; i++){
+            this.sprites[i].destroy();
+        }
+    
+        this.GameLogic.reset();
+        this.new(reset);
 
         }, this);
+
+        // home.on('pointerdown', function(pointer)
+        // {
+
+        //     for( let i=0; i < this.sprites.length; i++){
+        //         this.sprites[i].destroy();
+        //     }
+        
+        //     this.menu(home);
+
+
+        // }, this);
     }
 
     goal(){
@@ -279,7 +343,7 @@ class playGame extends Phaser.Scene{
     }
 
     monsters(){
-
+        this.monsterArr = [];
         let goals = this.goal();
 
         let goal1 = goals[0];
@@ -288,8 +352,13 @@ class playGame extends Phaser.Scene{
 
 
         let pos1 = this.GameLogic.currentLevelMonsters[0];
-        let monster1 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos1[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos1[0] + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
+        let monster1 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos1[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos1[0] + gameOptions.gemSize / 2, 'monster');
+        if(this.GameLogic.ai_mode == false){
+            monster1.setInteractive({ draggable: true });
+        }
         this.sprites.push(monster1);
+        this.monsterArr.push(monster1);
+
 
         monster1.setTint(0xf7c83b);
         monster1.depth = 2;
@@ -301,8 +370,12 @@ class playGame extends Phaser.Scene{
         monster1.win = false;
 
         let pos2 = this.GameLogic.currentLevelMonsters[1];
-        let monster2 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos2[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos2[0] + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
+        let monster2 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos2[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos2[0] + gameOptions.gemSize / 2, 'monster');
+        if(this.GameLogic.ai_mode == false){
+            monster2.setInteractive({ draggable: true });
+        }
         this.sprites.push(monster2);
+        this.monsterArr.push(monster2);
 
         monster2.setTint(0x2ca7b2);
         monster2.depth = 2;
@@ -314,8 +387,12 @@ class playGame extends Phaser.Scene{
         monster2.win = false;
 
         let pos3 = this.GameLogic.currentLevelMonsters[2];
-        let monster3 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos3[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos3[0] + gameOptions.gemSize / 2, 'monster').setInteractive({ draggable: true });
+        let monster3 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos3[1] + 1) + gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos3[0] + gameOptions.gemSize / 2, 'monster');
+        if(this.GameLogic.ai_mode == false){
+            monster3.setInteractive({ draggable: true });
+        }
         this.sprites.push(monster3);
+        this.monsterArr.push(monster3);
 
         monster3.setTint(0xe84e4e);
         monster3.depth = 2;
@@ -363,9 +440,7 @@ class playGame extends Phaser.Scene{
 
         }, this);
 
-    
-        
-
+            
     }
 
 
@@ -395,10 +470,180 @@ class playGame extends Phaser.Scene{
             }, this);
         }
     }
+
+    menu(house){
         
+        house.destroy();
+        let back_arrow = this.add.sprite(game.config.width/2 - 290, game.config.height/5 + 140, "back_arrow").setInteractive();
+        let bar1 = this.add.sprite(game.config.width / 2 , game.config.height/5 + 40, 'bar').setInteractive();
+        let bar2 = this.add.sprite(game.config.width / 2 , game.config.height/5 + 220, 'bar').setInteractive();
+        let bar3 = this.add.sprite(game.config.width / 2 , game.config.height/5 + 420, 'bar').setInteractive();
+
+        bar1.setTint(0x2ca7b2);
+        bar2.setTint(0x2ca7b2);
+        bar3.setTint(0x2ca7b2);
+
+        this.sprites.push(back_arrow);
+        this.sprites.push(bar1);
+        this.sprites.push(bar2);
+        this.sprites.push(bar3);
+
+        back_arrow.on('pointerdown', function (pointer){
+            for( let i=0; i < this.sprites.length; i++){
+                    this.sprites[i].destroy();
+            }
+
+            this.GameLogic.reset();
+            this.new(back_arrow);
+        
+        }, this)
+
+
+    }
+
+
+    aidrawField(){
+        this.aiTiles = [];
+        for(let i = 0; i < this.GameLogic.getRows(); i ++){
+            var row = []
+            for(let j = 1; j <= this.GameLogic.getColumns(); j ++){
+                let gemX = gameOptions.boardOffset.x + gameOptions.gemSize * j + gameOptions.gemSize / 2;
+                let gemY = gameOptions.boardOffset.y + gameOptions.gemSize * i + gameOptions.gemSize / 2;
+                let gem = this.add.sprite(gemX, gemY, "tiles", this.GameLogic.getValueAt(i, j-1)-1);
+                gem.type = this.GameLogic.getValueAt(i, j-1)
+                this.sprites.push(gem);
+                row.push(gem);
+                
+            }
+            this.aiTiles.push(row);
+        }
+    }
+
+    aiMovement(instructions, monsters){
+        let m1, m2, m3, direction, type, monster, m1Pos, m2Pos, m3Pos, pos;
+        let monsterArr = [];
+        let posArr = [];
+        this.timeline = this.tweens.createTimeline();
+        let game;
+        for(let i=0; i < monsters.length; i++){
+            if(monsters[i].type == 1){
+                m1 = monsters[i];
+                monsterArr.push(m1);
+                m1Pos = [m1.x, m1.y];
+                posArr.push(m1Pos);
+            }
+            else if(monsters[i].type == 2){
+                m2 = monsters[i];
+                monsterArr.push(m2);
+                m2Pos = [m2.x, m2.y];
+                posArr.push(m2Pos);
+            }
+            else{
+                m3 = monsters[i];
+                monsterArr.push(m3);
+                m3Pos = [m3.x, m3.y];
+                posArr.push(m3Pos);
+
+            }
+
+        }
+
+        for(let j=0; j < instructions.length; j++){
+            
+            if(instructions[j][0].length == 2){
+                game = this.GameLogic.gameArray;
+
+                let c1Pos = this.GameLogic.ai_position_of_colors(instructions[j][0][0]);
+
+                let c2Pos = this.GameLogic.ai_position_of_colors(instructions[j][0][1]);
+
+                console.log("c1", instructions[j][0][0]);
+                console.log("c2", instructions[j][0][1]);
+
+                for(let p = 0; p < c1Pos.length; p ++){
+                    var temp = this.aiTiles[c1Pos[p][0]][c1Pos[p][1]];
+                    
+                    this.timeline.add({
+                        targets: this.aiTiles[c1Pos[p][0]][c1Pos[p][1]],
+                        delay: 1,
+                        duration: 50,
+                        ease: 'Power2',
+                        x: gameOptions.boardOffset.x + gameOptions.gemSize * (c2Pos[p][1] + 1) + gameOptions.gemSize / 2,
+                        y: gameOptions.boardOffset.y + gameOptions.gemSize * c2Pos[p][0] + gameOptions.gemSize / 2
+                    });
+
+                    this.timeline.add({
+                        targets: this.aiTiles[c2Pos[p][0]][c2Pos[p][1]],
+                        delay: 1,
+                        duration: 50,
+                        ease: 'Power2',
+                        x: gameOptions.boardOffset.x + gameOptions.gemSize * (c1Pos[p][1] + 1) + gameOptions.gemSize / 2,
+                        y: gameOptions.boardOffset.y + gameOptions.gemSize * c1Pos[p][0] + gameOptions.gemSize / 2
+                    });
+                    this.aiTiles[c1Pos[p][0]][c1Pos[p][1]] = this.aiTiles[c2Pos[p][0]][c2Pos[p][1]];
+                    this.aiTiles[c2Pos[p][0]][c2Pos[p][1]] = temp;
+
+
+                }
+                this.GameLogic.swapColors(instructions[j][0][0], instructions[j][0][1]);
+            }
+            else{
+                direction = instructions[j][1];
+                type = instructions[j][0];
+
+                monster = monsterArr[type-1];
+                pos = posArr[type-1];
+                
+                if(direction == "r"){
+                    pos[0] += 80;
+                    this.timeline.add({
+                        targets:monster,
+                        delay: 1,
+                        duration: 500,
+                        ease: 'Power2',
+                        x:pos[0]
+                    });
+                }
+
+                if(direction == "l"){
+                    pos[0] -= 80;
+                    this.timeline.add({
+                        targets:monster,
+                        delay: -1,
+                        duration: 500,
+                        ease: 'Power2',
+                        x:pos[0]
+                    });
+                }
+
+                if(direction == "u"){
+                    pos[1] -= 80;
+                    this.timeline.add({
+                        targets:monster,
+                        delay: -1,
+                        duration: 500,
+                        ease: 'Power2',
+                        y:pos[1]
+                    });
+                }
+
+                if(direction == "d"){
+                    pos[1] += 80;
+                    this.timeline.add({
+                        targets:monster,
+                        delay: -1,
+                        duration: 500,
+                        ease: 'Power2',
+                        y:pos[1]
+                    });
+                }
+            }
+
+        }
+            this.timeline.play();
+    }
 
 }
-
 class GameLogic{
 
     // constructor, simply turns obj information into class properties
@@ -415,6 +660,8 @@ class GameLogic{
         this.currentLevelGoals = null;
         this.currentLevelMonsters = null;
 
+        this.gameArray = [];
+
         this.swaps = null;
 
         this.levelInfo = new LevelInfo();
@@ -424,12 +671,14 @@ class GameLogic{
         this.totallevels = 2; // levelnum starts at 0 
         this.monsterPos = null;
 
-
+        this.ai_mode = false;
+        this.instructions = [[1, 'r'], [1, 'u'], [1, 'u'], [1, 'u'], [1, 'u'], [1, 'u'], [[2, 1], 's'], [1, 'r'], [2, 'r'], [2, 'u'], [2, 'u'], [[3, 2], 's'], [3, 'd'], [3, 'd'], [3, 'd'], [3, 'd'], [3, 'r'], [[1, 3], 's'], [3, 'r'], [3, 'r'], [[2, 3], 's'], [2, 'r'], [2, 'r'], [3, 'r'], [3, 'r'], [[3, 2], 's'], [2, 'r'], [2, 'r']];
+        // this.instructions = [[1, 'u'], [[3, 2], 's'], [2, 'u'], [2, 'r'], [3, 'r'], [3, 'r'], [3, 'r'], [[2, 3], 's'], [2, 'u'], [2, 'r'], [1, 'u'], [1, 'r'], [[3, 1], 's'], [3, 'r'], [2, 'r'], [3, 'd'], [1, 'u'], [[1, 2], 's'], [1, 'u'], [[2, 3], 's'], [2, 'r'], [1, 'r'], [3, 'd'], [1, 'u'], [[3, 2], 's'], [2, 'r'], [3, 'r'], [[2, 3], 's'], [3, 'd'], [3, 'd']];
+        // this.instructions = [[[1, 2], 's'], [[3, 2], 's']];
     }
 
     // generates the game board from the levels
     generateBoard(){
-        this.gameArray = [];
         for(let i = 0; i < this.rows; i ++){
             this.gameArray[i] = [];
             for(let j = 0; j < this.columns; j ++){
@@ -470,7 +719,6 @@ class GameLogic{
         
         
     }
-
     displaySwap(swapText){
         if(this.swaps == null){
             this.swaps = this.levelInfo.get_level(this.levelnum).Swaps;
@@ -532,6 +780,23 @@ class GameLogic{
             return true;
         }
         return false;
+
+    }
+    // answer to first level generated [[1, 'r'], [1, 'u'], [1, 'u'], [1, 'u'], [1, 'u'], [1, 'u'], [[2, 1], 's'], [1, 'r'], [2, 'r'], [2, 'u'], [2, 'u'], [[3, 2], 's'], [3, 'd'], [3, 'd'], [3, 'd'], [3, 'd'], [3, 'r'], [[1, 3], 's'], [3, 'r'], [3, 'r'], [[2, 3], 's'], [2, 'r'], [2, 'r'], [3, 'r'], [3, 'r'], [[3, 2], 's'], [2, 'r'], [2, 'r']]
+
+
+    ai_position_of_colors(color){
+        let position = [];
+
+        for(let i = 0; i<this.gameArray.length; i++){
+            for(let j = 0; j < this.gameArray[0].length; j++){
+                if(this.gameArray[i][j].value == color){
+                    position.push([this.gameArray[i][j].row, this.gameArray[i][j].column])
+                }
+            }
+        }
+        return position;
+        
 
     }
 
