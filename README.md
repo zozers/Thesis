@@ -7,4 +7,5 @@ The goal of this puzzle is to move each monster to the star with the same color.
 Get each monster to the goal to move on. Finish all three levels to win.
 
 This is the output of Ai_solver.py being animated in the game.
-<img src="./assets/Ai_working.gif" width=200><br>
+
+<img src="assets/AI_working.gif" width=200><br>
