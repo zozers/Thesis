@@ -86,7 +86,7 @@ def neighbors(state, goals):
 		for j in range(len(all_positions_arr[1])):
 			for k in range(len(all_positions_arr[2])):
 				if(all_positions_arr[0][i] != all_positions_arr[1][j] and all_positions_arr[0][i] != all_positions_arr[2][k] and all_positions_arr[1][j] != all_positions_arr[2][k]):						
-					neighborhood.append(([all_positions_arr[0][i], all_positions_arr[1][j], all_positions_arr[2][k]], level_data))
+					# neighborhood.append(([all_positions_arr[0][i], all_positions_arr[1][j], all_positions_arr[2][k]], level_data))
 					neighborhood.append(([all_positions_arr[0][i], all_positions_arr[1][j], all_positions_arr[2][k]],color_swap(1, 2, level_data)))
 					neighborhood.append(([all_positions_arr[0][i], all_positions_arr[1][j], all_positions_arr[2][k]],color_swap(1, 3, level_data)))
 					neighborhood.append(([all_positions_arr[0][i], all_positions_arr[1][j], all_positions_arr[2][k]],color_swap(2, 3, level_data)))
@@ -192,7 +192,8 @@ if __name__ == "__main__":
 	
 	swapNumber = []
 
-	level_data = [[1,1,2,2,3,3],[2,2,2,2,3,3],[3,3,2,2,1,1],[1,1,2,2,3,3],[1,1,1,1,3,3],[1,1,2,2,3,3]]
+	# level_data = [[1,1,2,2,3,3],[2,2,2,2,3,3],[3,3,2,2,1,1],[1,1,2,2,3,3],[1,1,1,1,3,3],[1,1,2,2,3,3]]
+	level_data = [[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3]]
 	monster_data = [[5, 0],[3, 0],[1, 0]]
 	# monster_data = [[0, 2],[1, 5],[5, 5]]
 
