@@ -70,12 +70,12 @@ class playGame extends Phaser.Scene{
             }));
         }
 
-        if(this.GameLogic.ai_mode == false){
-            this.savedData = JSON.parse(localStorage.getItem(gameOptions.localStorageName));
-            this.GameLogic.maxLevelSolved = this.savedData.MaxLevelSolved;
-            this.GameLogic.levelnum = this.savedData.CurrentLevel;
 
-        }
+        this.savedData = JSON.parse(localStorage.getItem(gameOptions.localStorageName));
+        this.GameLogic.maxLevelSolved = this.savedData.MaxLevelSolved;
+        this.GameLogic.levelnum = this.savedData.CurrentLevel;
+
+        
 
         
         let obj = this.GameLogic.levelInfo.get_level(this.GameLogic.levelnum);
@@ -562,7 +562,6 @@ class playGame extends Phaser.Scene{
 
                 for(let p = 0; p < c1Pos.length; p ++){
                     var temp = this.aiTiles[c1Pos[p][0]][c1Pos[p][1]];
-                    
                     this.timeline.add({
                         targets: this.aiTiles[c1Pos[p][0]][c1Pos[p][1]],
                         delay: 1,
@@ -668,13 +667,19 @@ class GameLogic{
         this.levelnum = 0;
         this.maxLevelSolved = 0;
 
-        this.totallevels = 2; // levelnum starts at 0 
+        this.totallevels = 3; // levelnum starts at 0 
         this.monsterPos = null;
 
-        this.ai_mode = false;
-        this.instructions = [[1, 'r'], [1, 'u'], [1, 'u'], [1, 'u'], [1, 'u'], [1, 'u'], [[2, 1], 's'], [1, 'r'], [2, 'r'], [2, 'u'], [2, 'u'], [[3, 2], 's'], [3, 'd'], [3, 'd'], [3, 'd'], [3, 'd'], [3, 'r'], [[1, 3], 's'], [3, 'r'], [3, 'r'], [[2, 3], 's'], [2, 'r'], [2, 'r'], [3, 'r'], [3, 'r'], [[3, 2], 's'], [2, 'r'], [2, 'r']];
+        this.ai_mode = true;
+        // this.instructions = [[1, 'r'], [1, 'u'], [1, 'u'], [1, 'u'], [1, 'u'], [1, 'u'], [[2, 1], 's'], [1, 'r'], [2, 'r'], [2, 'u'], [2, 'u'], [[3, 2], 's'], [3, 'd'], [3, 'd'], [3, 'd'], [3, 'd'], [3, 'r'], [[1, 3], 's'], [3, 'r'], [3, 'r'], [[2, 3], 's'], [2, 'r'], [2, 'r'], [3, 'r'], [3, 'r'], [[3, 2], 's'], [2, 'r'], [2, 'r']];
         // this.instructions = [[1, 'u'], [[3, 2], 's'], [2, 'u'], [2, 'r'], [3, 'r'], [3, 'r'], [3, 'r'], [[2, 3], 's'], [2, 'u'], [2, 'r'], [1, 'u'], [1, 'r'], [[3, 1], 's'], [3, 'r'], [2, 'r'], [3, 'd'], [1, 'u'], [[1, 2], 's'], [1, 'u'], [[2, 3], 's'], [2, 'r'], [1, 'r'], [3, 'd'], [1, 'u'], [[3, 2], 's'], [2, 'r'], [3, 'r'], [[2, 3], 's'], [3, 'd'], [3, 'd']];
         // this.instructions = [[[1, 2], 's'], [[3, 2], 's']];
+
+        this.instructions = [];
+
+        if(this.ai_mode == true){
+            this.instructions = this.levelInfo.get_level(this.levelnum).AiSolution
+        }
     }
 
     // generates the game board from the levels
