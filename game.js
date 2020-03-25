@@ -42,6 +42,12 @@ class playGame extends Phaser.Scene{
             frameWidth: gameOptions.gemSize,
             frameHeight: gameOptions.gemSize
         });
+
+        this.load.spritesheet("tile_white", "assets/sprites/tiles_white.png", {
+            frameWidth: gameOptions.gemSize,
+            frameHeight: gameOptions.gemSize
+        });
+        // this.load.image('tile', 'assets/sprites/tile.png');
         this.load.image('button', 'assets/sprites/new_button.png');
         this.load.image('red_blue', 'assets/sprites/red_blue.png');
         this.load.image('yellow_red', 'assets/sprites/yellow_red.png');
@@ -73,11 +79,7 @@ class playGame extends Phaser.Scene{
 
         this.savedData = JSON.parse(localStorage.getItem(gameOptions.localStorageName));
         this.GameLogic.maxLevelSolved = this.savedData.MaxLevelSolved;
-        this.GameLogic.levelnum = this.savedData.CurrentLevel;
-
-        
-
-        
+        this.GameLogic.levelnum = this.savedData.CurrentLevel;        
         let obj = this.GameLogic.levelInfo.get_level(this.GameLogic.levelnum);
         console.log(obj);
 
@@ -85,21 +87,37 @@ class playGame extends Phaser.Scene{
         this.GameLogic.currentLevelMonsters = obj.MonsterPos;
         this.GameLogic.currentLevelGoals = obj.GoalPos;
         this.GameLogic.swaps = obj.Swaps;
+        this.GameLogic.instructions = obj.AiSolution;
         this.GameLogic.generateBoard();            
         this.drawField();
-        this.buttons();
+        if(this.GameLogic.ai_mode == true){
+             this.ai_buttons();
+        }
+        else{
+            this.buttons();
+        }
         this.monsters();
 
-        
- 
     }
 
     new(button){
 
         if(this.GameLogic.ai_mode == true){
+            button.destroy();
+            this.sprites = [];
+
+            let obj = this.GameLogic.levelInfo.get_level(this.GameLogic.levelnum);
+            console.log(obj);
+            this.GameLogic.currentLevelBoard = obj.boardInfo;
+            this.GameLogic.currentLevelGoals = obj.GoalPos;
+            this.GameLogic.currentLevelMonsters = obj.MonsterPos;
+            this.GameLogic.swaps = obj.Swaps;
+            this.GameLogic.instructions = obj.AiSolution;
+
+            console.log("HELLO");
             this.GameLogic.generateBoard();
             this.aidrawField();
-            this.buttons();
+            this.ai_buttons();
             this.monsters();
         }
         else{
@@ -136,38 +154,30 @@ class playGame extends Phaser.Scene{
 
     buttons(){
 
-        let button1 = this.add.sprite(game.config.width / 2- 220, game.config.height - 200, 'red_blue');
+        let swap_red_blue = this.add.sprite(game.config.width / 2- 220, game.config.height - 200, 'red_blue');
         console.log(this.GameLogic.ai_mode);
         if(this.GameLogic.ai_mode == false){
             console.log(this.GameLogic.ai_mode);
-            button1.setInteractive();
+            swap_red_blue.setInteractive();
         }
-        this.sprites.push(button1);
+        this.sprites.push(swap_red_blue);
         
-        let button2 = this.add.sprite(game.config.width / 2 + 0, game.config.height - 200, 'yellow_red');
+        let swap_yellow_red = this.add.sprite(game.config.width / 2 + 0, game.config.height - 200, 'yellow_red');
         if(this.GameLogic.ai_mode == false){
-            button2.setInteractive();
-        }
-        
-        this.sprites.push(button2);
-    
+            swap_yellow_red.setInteractive();
+        }        
+        this.sprites.push(swap_yellow_red);
            
-        let button3 = this.add.sprite(game.config.width / 2 + 220, game.config.height - 200, 'yellow_blue');
+        let swap_yellow_blue = this.add.sprite(game.config.width / 2 + 220, game.config.height - 200, 'yellow_blue');
         if(this.GameLogic.ai_mode == false){
-            button3.setInteractive();
+            swap_yellow_blue.setInteractive();
         }
-        this.sprites.push(button3);
+        this.sprites.push(swap_yellow_blue);
+        
         let swapText;
-        if(this.GameLogic.ai_mode == false){
-            swapText = this.add.text(game.config.width/ 2 - 250, game.config.height/5 - 130, "Swaps Left: ", { font: '85px Arial', fill: '#BDBDBD'});
-            this.sprites.push(swapText);
-            this.GameLogic.displaySwap(swapText);
-
-        }
-        else{
-            swapText = this.add.text(game.config.width/ 2 - 250, game.config.height/5 - 130, "AI Mode!", { font: '85px Arial', fill: '#BDBDBD'});
-            this.sprites.push(swapText);
-        }
+        swapText = this.add.text(game.config.width/ 2 - 250, game.config.height/5 - 130, "Swaps Left: ", { font: '85px Arial', fill: '#BDBDBD'});
+        this.sprites.push(swapText);
+        this.GameLogic.displaySwap(swapText);
 
         let prev = this.add.sprite(game.config.width/ 2 - 220, game.config.height/5 + 30, 'button').setInteractive();
         
@@ -180,14 +190,10 @@ class playGame extends Phaser.Scene{
        
         this.sprites.push(prev);
 
-        if(this.GameLogic.ai_mode == false){
-            let prevText = this.add.text(game.config.width/2 - 310 , game.config.height/5 + 10, "Previous Level", { font: '28px Arial', color: '0x222222' });
-            this.sprites.push(prevText);
-        }
-        else{
-            let prevText = this.add.text(game.config.width/2 - 310 , game.config.height/5 + 10, "Stop", { font: '28px Arial', color: '0x222222' });
-            this.sprites.push(prevText);
-        }
+        let prevText = this.add.text(game.config.width/2 - 310 , game.config.height/5 + 10, "Previous Level", { font: '28px Arial', color: '0x222222' });
+        this.sprites.push(prevText);
+        
+       
         
         let reset = this.add.sprite(game.config.width / 2 , game.config.height/5 + 30, 'button').setInteractive();
         this.sprites.push(reset);
@@ -197,7 +203,7 @@ class playGame extends Phaser.Scene{
 
 
         let next = this.add.sprite(game.config.width/ 2 + 220, game.config.height/5 + 30, 'button').setInteractive();
-        if(this.GameLogic.levelnum < this.GameLogic.maxLevelSolved && this.GameLogic.levelnum < this.GameLogic.totallevels || this.GameLogic.ai_mode == true){
+        if(this.GameLogic.levelnum < this.GameLogic.maxLevelSolved && this.GameLogic.levelnum < this.GameLogic.totallevels){
             next.setTint(0xffffff);
 
         }
@@ -206,19 +212,19 @@ class playGame extends Phaser.Scene{
         }
        
         this.sprites.push(next);
-        if(this.GameLogic.ai_mode == false){
+    
+        let nextText = this.add.text(game.config.width/2 + 150, game.config.height/5 + 10, "Next Level", { font: '30px Arial', color: '0x222222' });
+        this.sprites.push(nextText);
+        
+       
 
-            let nextText = this.add.text(game.config.width/2 + 150, game.config.height/5 + 10, "Next Level", { font: '30px Arial', color: '0x222222' });
-            this.sprites.push(nextText);
-        }
-        else{
-            let nextText = this.add.text(game.config.width/2 + 150, game.config.height/5 + 10, "Start", { font: '30px Arial', color: '0x222222' });
-            this.sprites.push(nextText);
-        }
+        let ai = this.add.sprite(game.config.width/2 - 290, game.config.height/5 + 340, "button").setInteractive();
+        ai.angle += 90;
+        let aiText = this.add.text(game.config.width/2 - 330, game.config.height/5 + 330, "Toggle Ai", { font: '20px Arial', color: '0x222222' });
+        this.sprites.push(aiText);
+        this.sprites.push(ai);
 
-        // let home = this.add.sprite(game.config.width/2 - 290, game.config.height/5 + 140, "home").setInteractive();
-        // this.sprites.push(home);
-        button1.on('pointerdown', function (pointer) 
+        swap_red_blue.on('pointerdown', function (pointer) 
         {
 
             this.GameLogic.swapColors(2, 3, swapText);
@@ -229,7 +235,7 @@ class playGame extends Phaser.Scene{
 
         }, this);
 
-        button2.on('pointerdown', function (pointer) 
+        swap_yellow_red.on('pointerdown', function (pointer) 
         {
 
             this.GameLogic.swapColors(1, 3, swapText);
@@ -240,7 +246,7 @@ class playGame extends Phaser.Scene{
 
         }, this);
 
-        button3.on('pointerdown', function (pointer) 
+        swap_yellow_blue.on('pointerdown', function (pointer) 
         {
 
             this.GameLogic.swapColors(1, 2, swapText);
@@ -257,62 +263,224 @@ class playGame extends Phaser.Scene{
                     this.sprites[i].destroy();
             }
  
-            if(this.GameLogic.ai_mode == true){
-                // ai
-                this.GameLogic.reset();
-                this.new(reset);
-                this.aiMovement(this.GameLogic.instructions, this.monsterArr); 
-            }
-            else{
                 this.GameLogic.next();
                 this.new(next);
-            }
 
         }, this);
 
         prev.on('pointerdown', function (pointer)
         {
-            if(this.GameLogic.ai_mode == true){
-                this.timeline.stop();
+        
+            for( let i=0; i < this.sprites.length; i++){
+                this.sprites[i].destroy();
             }
-            else{
 
-                for( let i=0; i < this.sprites.length; i++){
-                    this.sprites[i].destroy();
-                }
+            this.GameLogic.prev();
 
-                this.GameLogic.prev();
-
-                this.new(prev);
-            }
+            this.new(prev);
             
-
-
-
         }, this);
 
         reset.on('pointerdown', function (pointer){
         
-        for( let i=0; i < this.sprites.length; i++){
-            this.sprites[i].destroy();
-        }
-    
-        this.GameLogic.reset();
-        this.new(reset);
+            for( let i=0; i < this.sprites.length; i++){
+                this.sprites[i].destroy();
+            }
+        
+            this.GameLogic.reset();
+            this.new(reset);
 
         }, this);
 
-        // home.on('pointerdown', function(pointer)
-        // {
+        ai.on('pointerdown', function(pointer)
+        {
 
-        //     for( let i=0; i < this.sprites.length; i++){
-        //         this.sprites[i].destroy();
-        //     }
+            this.GameLogic.ai_mode = !this.GameLogic.ai_mode;
+            for( let i=0; i < this.sprites.length; i++){
+                this.sprites[i].destroy();
+            }
+
+            try{
+                this.aiTimeline.pause();
+            }
+            catch(err){
+                console.log("no timeline")
+            }
         
-        //     this.menu(home);
+            this.GameLogic.reset();
+            this.new(ai);
 
 
-        // }, this);
+        }, this);
+    }
+
+    ai_buttons(){
+
+        let aiModeText = this.add.text(game.config.width/ 2 - 250, game.config.height/5 - 130, "Ai Mode", { font: '85px Arial', fill: '#BDBDBD'});
+        this.sprites.push(aiModeText);
+
+        let pause = this.add.sprite(game.config.width/ 2 - 220, game.config.height/5 + 30, 'button').setInteractive();
+        
+        this.sprites.push(pause);
+
+        let pauseText = this.add.text(game.config.width/2 - 310 , game.config.height/5 + 10, "Pause", { font: '28px Arial', color: '0x222222' });
+        this.sprites.push(pauseText);
+
+        let pauseBool = false;
+        
+        
+        let reset = this.add.sprite(game.config.width / 2 , game.config.height/5 + 30, 'button').setInteractive();
+        this.sprites.push(reset);
+
+        let resetText = this.add.text(game.config.width/2 - 80, game.config.height/5 + 10, "Reset Level", { font: '30px Arial', color: '0x222222' });
+        this.sprites.push(resetText);
+
+
+        let start = this.add.sprite(game.config.width/ 2 + 220, game.config.height/5 + 30, 'button').setInteractive();
+        
+        this.sprites.push(start);
+        
+        let startText = this.add.text(game.config.width/2 + 150, game.config.height/5 + 10, "Start", { font: '30px Arial', color: '0x222222' });
+        this.sprites.push(startText);
+
+
+        let prev = this.add.sprite(game.config.width / 2- 220, game.config.height - 200, 'button').setInteractive();
+        
+        if(this.GameLogic.levelnum > 0){
+            prev.setTint(0xffffff);
+        }
+        else{
+            prev.setTint(0xe22121);
+        }
+       
+        this.sprites.push(prev);
+
+        let prevText = this.add.text(game.config.width/2 - 310 , game.config.height-210, "Previous Level", { font: '28px Arial', color: '0x222222' });
+        this.sprites.push(prevText);
+
+        let next = this.add.sprite(game.config.width / 2 + 220, game.config.height - 200, 'button').setInteractive();
+        if(this.GameLogic.levelnum < this.GameLogic.maxLevelSolved && this.GameLogic.levelnum < this.GameLogic.totallevels){
+            next.setTint(0xffffff);
+
+        }
+        else{
+            next.setTint(0xe22121);
+        }
+       
+        this.sprites.push(next);
+    
+        let nextText = this.add.text(game.config.width/2 + 150, game.config.height - 210, "Next Level", { font: '30px Arial', color: '0x222222' });
+        this.sprites.push(nextText);
+
+
+        let ai = this.add.sprite(game.config.width/2 - 290, game.config.height/5 + 340, "button").setInteractive();
+        ai.angle += 90;
+        let aiText = this.add.text(game.config.width/2 - 330, game.config.height/5 + 330, "Toggle Ai", { font: '20px Arial', color: '0x222222' });
+        this.sprites.push(aiText);
+        this.sprites.push(ai);
+
+
+        start.on('pointerdown', function (pointer)
+        {
+            start.setTint(0xe22121);
+            if(this.GameLogic.ai_in_progress == false){
+                for( let i=0; i < this.sprites.length; i++){
+                    this.sprites[i].destroy();
+                }
+                // this.GameLogic.reset();
+                this.new(start);
+                this.aiMovement(this.GameLogic.instructions, this.monsterArr);
+                this.GameLogic.ai_in_progress = true; 
+            }
+
+     
+            
+        }, this);
+
+        pause.on('pointerdown', function (pointer)
+        {
+            if(this.GameLogic.ai_in_progress == true){
+
+                if(pauseBool == false){
+                this.aiTimeline.pause();
+                console.log(pauseText);
+                pauseBool = true;
+                pauseText.setText('Play');
+                }
+                else{
+                    this.aiTimeline.resume();
+                    pauseBool = false;
+                    pauseText.text = "Pause";
+                }
+            }
+            
+        }, this);
+
+        reset.on('pointerdown', function (pointer){
+        
+            for( let i=0; i < this.sprites.length; i++){
+                this.sprites[i].destroy();
+            }
+
+            this.aiTimeline.stop();
+        
+            this.GameLogic.reset();
+            this.new(reset);
+
+        }, this);
+
+        next.on('pointerdown', function (pointer)
+        {
+            for( let i=0; i < this.sprites.length; i++){
+                    this.sprites[i].destroy();
+            }
+ 
+                this.aiTimeline.stop();
+                this.GameLogic.next();
+                this.new(next);
+                this.GameLogic.ai_in_progress = false;
+
+        }, this);
+
+        prev.on('pointerdown', function (pointer)
+        {
+        
+            for( let i=0; i < this.sprites.length; i++){
+                this.sprites[i].destroy();
+            }
+
+            this.aiTimeline.stop();
+            this.GameLogic.prev();
+            this.new(prev);
+            this.GameLogic.ai_in_progress = false;
+
+            
+        }, this);
+
+         ai.on('pointerdown', function(pointer)
+        {
+
+            this.GameLogic.ai_mode = !this.GameLogic.ai_mode;
+            for( let i=0; i < this.sprites.length; i++){
+                this.sprites[i].destroy();
+            }
+
+            try{
+                this.aiTimeline.pause();
+            }
+            catch(err){
+                console.log("no timeline")
+            }
+
+        
+            this.GameLogic.reset();
+            this.new(ai);
+            this.GameLogic.ai_in_progress = false;
+
+
+
+        }, this);
+
     }
 
     goal(){
@@ -320,7 +488,7 @@ class playGame extends Phaser.Scene{
         let pos1 = this.GameLogic.currentLevelGoals[0];
         let goal1 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos1[1]+1) +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos1[0] + gameOptions.gemSize / 2, 'star');
         goal1.setDepth(1);
-        goal1.setTint(0x2ca7b2);
+        goal1.setTint(0xf7c83b);
         goal1.position = pos1;
         this.sprites.push(goal1);
 
@@ -328,14 +496,14 @@ class playGame extends Phaser.Scene{
         console.log(pos2);
         let goal2 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos2[1]+1) +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos2[0] + gameOptions.gemSize / 2, 'star');
         goal2.setDepth(1);
-        goal2.setTint(0xe84e4e);
+        goal2.setTint(0x2ca7b2);
         goal2.position = pos2;
         this.sprites.push(goal2);
 
         let pos3 =  this.GameLogic.currentLevelGoals[2];
         let goal3 = this.add.sprite(gameOptions.boardOffset.x + gameOptions.gemSize * (pos3[1]+1) +gameOptions.gemSize / 2, gameOptions.boardOffset.y + gameOptions.gemSize * pos3[0] + gameOptions.gemSize / 2, 'star');
         goal3.setDepth(1);
-        goal3.setTint(0xf7c83b);
+        goal3.setTint(0xe84e4e);
         goal3.position = pos3;
         this.sprites.push(goal3);
         return [goal1, goal2, goal3];
@@ -364,7 +532,7 @@ class playGame extends Phaser.Scene{
         monster1.depth = 2;
         monster1.position = pos1;
         monster1.type = 1;
-        monster1.goalPos = goal3.position;
+        monster1.goalPos = goal1.position;
         monster1.movable = true;
         monster1.atGoal = false;
         monster1.win = false;
@@ -381,7 +549,7 @@ class playGame extends Phaser.Scene{
         monster2.depth = 2;
         monster2.position = pos2;
         monster2.type = 2;
-        monster2.goalPos = goal1.position;
+        monster2.goalPos = goal2.position;
         monster2.movable = true;
         monster2.atGoal = false;
         monster2.win = false;
@@ -398,7 +566,7 @@ class playGame extends Phaser.Scene{
         monster3.depth = 2;
         monster3.position = pos3;
         monster3.type = 3;
-        monster3.goalPos = goal2.position;
+        monster3.goalPos = goal3.position;
         monster3.movable = true;
         monster3.atGoal = false;
         monster3.win = false;
@@ -501,19 +669,26 @@ class playGame extends Phaser.Scene{
 
     }
 
-
     aidrawField(){
         this.aiTiles = [];
+
+        let c1 = 0xf7c83b;
+        let c2 = 0x2ca7b2;
+        let c3 = 0xe84e4e;
+        
+
+        let colorArr = [c1, c2, c3]
+
         for(let i = 0; i < this.GameLogic.getRows(); i ++){
             var row = []
             for(let j = 1; j <= this.GameLogic.getColumns(); j ++){
                 let gemX = gameOptions.boardOffset.x + gameOptions.gemSize * j + gameOptions.gemSize / 2;
                 let gemY = gameOptions.boardOffset.y + gameOptions.gemSize * i + gameOptions.gemSize / 2;
-                let gem = this.add.sprite(gemX, gemY, "tiles", this.GameLogic.getValueAt(i, j-1)-1);
+                let gem = this.add.sprite(gemX, gemY, "tile_white", this.GameLogic.getValueAt(i, j-1)-1);
+                gem.setTint(colorArr[this.GameLogic.getValueAt(i, j-1)-1])
                 gem.type = this.GameLogic.getValueAt(i, j-1)
                 this.sprites.push(gem);
                 row.push(gem);
-                
             }
             this.aiTiles.push(row);
         }
@@ -523,8 +698,9 @@ class playGame extends Phaser.Scene{
         let m1, m2, m3, direction, type, monster, m1Pos, m2Pos, m3Pos, pos;
         let monsterArr = [];
         let posArr = [];
-        this.timeline = this.tweens.createTimeline();
+        this.aiTimeline = this.tweens.createTimeline();
         let game;
+        console.log(this.GameLogic.instructions);
         for(let i=0; i < monsters.length; i++){
             if(monsters[i].type == 1){
                 m1 = monsters[i];
@@ -543,9 +719,7 @@ class playGame extends Phaser.Scene{
                 monsterArr.push(m3);
                 m3Pos = [m3.x, m3.y];
                 posArr.push(m3Pos);
-
             }
-
         }
 
         for(let j=0; j < instructions.length; j++){
@@ -557,33 +731,48 @@ class playGame extends Phaser.Scene{
 
                 let c2Pos = this.GameLogic.ai_position_of_colors(instructions[j][0][1]);
 
+                let co1 = 0xf7c83b;
+                let co2 = 0x2ca7b2;
+                let co3 = 0xe84e4e;
+                
+
+                let colorArr = [co1, co2, co3]
+                
                 console.log("c1", instructions[j][0][0]);
                 console.log("c2", instructions[j][0][1]);
 
                 for(let p = 0; p < c1Pos.length; p ++){
-                    var temp = this.aiTiles[c1Pos[p][0]][c1Pos[p][1]];
-                    this.timeline.add({
+                    let c1 = game[c1Pos[p][0]][c1Pos[p][1]].value;
+                    let changeTo = instructions[j][0][1];
+                    if( c1 == instructions[j][0][1] ){
+                        changeTo = instructions[j][0][0];
+                    }
+                    this.aiTimeline.add({
                         targets: this.aiTiles[c1Pos[p][0]][c1Pos[p][1]],
-                        delay: 1,
+                        tweenStep: 100,
+                        onUpdate: ()=>{
+                            this.aiTiles[c1Pos[p][0]][c1Pos[p][1]].setTint(colorArr[changeTo - 1]);
+                        },
                         duration: 50,
-                        ease: 'Power2',
-                        x: gameOptions.boardOffset.x + gameOptions.gemSize * (c2Pos[p][1] + 1) + gameOptions.gemSize / 2,
-                        y: gameOptions.boardOffset.y + gameOptions.gemSize * c2Pos[p][0] + gameOptions.gemSize / 2
                     });
-
-                    this.timeline.add({
-                        targets: this.aiTiles[c2Pos[p][0]][c2Pos[p][1]],
-                        delay: 1,
-                        duration: 50,
-                        ease: 'Power2',
-                        x: gameOptions.boardOffset.x + gameOptions.gemSize * (c1Pos[p][1] + 1) + gameOptions.gemSize / 2,
-                        y: gameOptions.boardOffset.y + gameOptions.gemSize * c1Pos[p][0] + gameOptions.gemSize / 2
-                    });
-                    this.aiTiles[c1Pos[p][0]][c1Pos[p][1]] = this.aiTiles[c2Pos[p][0]][c2Pos[p][1]];
-                    this.aiTiles[c2Pos[p][0]][c2Pos[p][1]] = temp;
-
-
                 }
+
+                for(let p = 0; p < c2Pos.length; p ++){
+                    let c2 = game[c2Pos[p][0]][c2Pos[p][1]].value;
+                    let changeTo = instructions[j][0][1];
+                    if( c2 == instructions[j][0][1] ){
+                        changeTo = instructions[j][0][0];
+                    }
+                    this.aiTimeline.add({
+                        targets: this.aiTiles[c2Pos[p][0]][c2Pos[p][1]],
+                        tweenStep: 100,
+                        onUpdate: ()=>{
+                            this.aiTiles[c2Pos[p][0]][c2Pos[p][1]].setTint(colorArr[changeTo - 1]);
+                        },
+                        duration: 50,
+                    });
+                }
+
                 this.GameLogic.swapColors(instructions[j][0][0], instructions[j][0][1]);
             }
             else{
@@ -595,7 +784,7 @@ class playGame extends Phaser.Scene{
                 
                 if(direction == "r"){
                     pos[0] += 80;
-                    this.timeline.add({
+                    this.aiTimeline.add({
                         targets:monster,
                         delay: 1,
                         duration: 500,
@@ -606,7 +795,7 @@ class playGame extends Phaser.Scene{
 
                 if(direction == "l"){
                     pos[0] -= 80;
-                    this.timeline.add({
+                    this.aiTimeline.add({
                         targets:monster,
                         delay: -1,
                         duration: 500,
@@ -617,7 +806,7 @@ class playGame extends Phaser.Scene{
 
                 if(direction == "u"){
                     pos[1] -= 80;
-                    this.timeline.add({
+                    this.aiTimeline.add({
                         targets:monster,
                         delay: -1,
                         duration: 500,
@@ -628,7 +817,7 @@ class playGame extends Phaser.Scene{
 
                 if(direction == "d"){
                     pos[1] += 80;
-                    this.timeline.add({
+                    this.aiTimeline.add({
                         targets:monster,
                         delay: -1,
                         duration: 500,
@@ -639,7 +828,7 @@ class playGame extends Phaser.Scene{
             }
 
         }
-            this.timeline.play();
+            this.aiTimeline.play();
     }
 
 }
@@ -667,10 +856,12 @@ class GameLogic{
         this.levelnum = 0;
         this.maxLevelSolved = 0;
 
-        this.totallevels = 3; // levelnum starts at 0 
+        this.totallevels = 4; // levelnum starts at 0 
         this.monsterPos = null;
 
-        this.ai_mode = true;
+        this.ai_mode = false;
+        this.ai_in_progress = false;
+        this.instructions = null;
         // this.instructions = [[1, 'r'], [1, 'u'], [1, 'u'], [1, 'u'], [1, 'u'], [1, 'u'], [[2, 1], 's'], [1, 'r'], [2, 'r'], [2, 'u'], [2, 'u'], [[3, 2], 's'], [3, 'd'], [3, 'd'], [3, 'd'], [3, 'd'], [3, 'r'], [[1, 3], 's'], [3, 'r'], [3, 'r'], [[2, 3], 's'], [2, 'r'], [2, 'r'], [3, 'r'], [3, 'r'], [[3, 2], 's'], [2, 'r'], [2, 'r']];
         // this.instructions = [[1, 'u'], [[3, 2], 's'], [2, 'u'], [2, 'r'], [3, 'r'], [3, 'r'], [3, 'r'], [[2, 3], 's'], [2, 'u'], [2, 'r'], [1, 'u'], [1, 'r'], [[3, 1], 's'], [3, 'r'], [2, 'r'], [3, 'd'], [1, 'u'], [[1, 2], 's'], [1, 'u'], [[2, 3], 's'], [2, 'r'], [1, 'r'], [3, 'd'], [1, 'u'], [[3, 2], 's'], [2, 'r'], [3, 'r'], [[2, 3], 's'], [3, 'd'], [3, 'd']];
         // this.instructions = [[[1, 2], 's'], [[3, 2], 's']];
@@ -787,8 +978,6 @@ class GameLogic{
         return false;
 
     }
-    // answer to first level generated [[1, 'r'], [1, 'u'], [1, 'u'], [1, 'u'], [1, 'u'], [1, 'u'], [[2, 1], 's'], [1, 'r'], [2, 'r'], [2, 'u'], [2, 'u'], [[3, 2], 's'], [3, 'd'], [3, 'd'], [3, 'd'], [3, 'd'], [3, 'r'], [[1, 3], 's'], [3, 'r'], [3, 'r'], [[2, 3], 's'], [2, 'r'], [2, 'r'], [3, 'r'], [3, 'r'], [[3, 2], 's'], [2, 'r'], [2, 'r']]
-
 
     ai_position_of_colors(color){
         let position = [];
@@ -924,6 +1113,7 @@ class GameLogic{
     reset(){
         this.goalsReached = 0;
         this.swaps = this.levelInfo.get_level(this.levelnum).Swaps;
+        this.ai_in_progress = false;
     }
 
     checkEnd(){

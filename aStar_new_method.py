@@ -55,21 +55,34 @@ def heuristicMedium(state, goals):
 	(monsters, tiles) = state
 	check_movement = 0
 	no_move = 0
+	on_goal = 0
 
-
-
+	i = 0
 	for monster in monsters:
 
-		(gRow, gCol) = goals[mtype]
+		if(i == 0):
+			other_monsters = monster_data[1:]
+		elif(i == 1):
+			other_monsters = [monster_data[0], monster_data[2]]
+		else:
+			other_monsters = [monster_data[0], monster_data[1]]
 
+		(gRow, gCol) = goals[mtype]
 		steps += abs(monster[0] - gRow) + abs(monster[1] - gCol)
 		mtype += 1
-		check_movement = len(all_positions(monster, tiles, mtype + 1))
-		
-		if(check_movement == 0 and (abs(monster[0] - gRow) != 0 and abs(monster[1] - gCol) != 0 )):
-			no_move += 1		
-	# print("How many monsters cannot move on this swap: ", no_move)
-	return steps + no_move
+
+		if((abs(monster[0] - gRow) == 0 and abs(monster[1] - gCol) == 0 )):
+			on_goal += 1
+		else:
+			check_movement = len(all_positions(monster, tiles, mtype, other_monsters))			
+			if(check_movement == 0):
+				no_move += 1
+		i += 1
+
+	total_movable = 3 - on_goal
+
+	can_move = total_movable - no_move
+	return (steps/(can_move+1))
 
 
 # this function finds all of the 1 step neighbors. Swaping colors or moving one square counts as 1 step.
@@ -80,11 +93,16 @@ def neighbors(state, goals):
 	all_positions_arr = []
 	
 	for i in range(len(monster_data)):
+		if(i == 0):
+			other_monsters = monster_data[1:]
+		elif(i == 1):
+			other_monsters = [monster_data[0], monster_data[2]]
+		else:
+			other_monsters = [monster_data[0], monster_data[1]]
+
 		(row, col) = goals[i]
 		if(monster_data[i][0] != row or monster_data[i][1] != col):
-			x = all_positions(monster_data[i], level_data, i + 1)
-			if(len(x) == 0):
-				x = [monster_data[i]]
+			x = all_positions(monster_data[i], level_data, i + 1, other_monsters)
 			all_positions_arr.append(x)
 		else:
 			x = [monster_data[i]]
@@ -94,7 +112,6 @@ def neighbors(state, goals):
 		for j in range(len(all_positions_arr[1])):
 			for k in range(len(all_positions_arr[2])):
 				if(all_positions_arr[0][i] != all_positions_arr[1][j] and all_positions_arr[0][i] != all_positions_arr[2][k] and all_positions_arr[1][j] != all_positions_arr[2][k]):						
-					# neighborhood.append(([all_positions_arr[0][i], all_positions_arr[1][j], all_positions_arr[2][k]], level_data))
 					neighborhood.append(([all_positions_arr[0][i], all_positions_arr[1][j], all_positions_arr[2][k]], color_swap(1, 2, level_data)))
 					neighborhood.append(([all_positions_arr[0][i], all_positions_arr[1][j], all_positions_arr[2][k]], color_swap(1, 3, level_data)))
 					neighborhood.append(([all_positions_arr[0][i], all_positions_arr[1][j], all_positions_arr[2][k]], color_swap(2, 3, level_data)))
@@ -110,43 +127,41 @@ def printBoard(state):
 
 
 
-def all_positions(monster_pos, level_data, monster_type):
+def all_positions(monster_pos, level_data, monster_type, other_monsters):
 	positions = []
 	queue = deque([monster_pos])
 	visited = [monster_pos]
 
 	while queue:
 		v = queue.popleft()
-		if(v[0] < len(level_data) - 1 and level_data[v[0] + 1][v[1]] == monster_type and [v[0] + 1, v[1]] not in visited):
+		if(v[0] < len(level_data) - 1 and level_data[v[0] + 1][v[1]] == monster_type and [v[0] + 1, v[1]] not in visited and [v[0] + 1, v[1]] not in other_monsters):
 			queue.append([v[0] + 1, v[1]])
 			visited.append([v[0] + 1, v[1]])
 			positions.append([v[0] + 1, v[1]])
 		
-		if(v[0] > 0 and level_data[v[0] - 1][v[1]] == monster_type and [v[0] - 1, v[1]] not in visited):
+		if(v[0] > 0 and level_data[v[0] - 1][v[1]] == monster_type and [v[0] - 1, v[1]] and [v[0] - 1, v[1]] not in visited):
 			queue.append([v[0] - 1, v[1]])
 			visited.append([v[0] - 1, v[1]])
 			positions.append([v[0] - 1, v[1]])
 
 		
-		if(v[1] < len(level_data[0]) - 1 and level_data[v[0]][v[1] + 1] == monster_type and [v[0], v[1]+1] not in visited):
+		if(v[1] < len(level_data[0]) - 1 and level_data[v[0]][v[1] + 1] == monster_type and [v[0], v[1]+1] not in visited and [v[0], v[1]+1] not in other_monsters):
 			queue.append([v[0], v[1]+1])
 			visited.append([v[0], v[1] + 1])
 			positions.append([v[0], v[1] + 1])
 
 		
-		if(v[1] > 0 and level_data[v[0]][v[1] - 1] == monster_type and [v[0], v[1] - 1] not in visited):
+		if(v[1] > 0 and level_data[v[0]][v[1] - 1] == monster_type and [v[0], v[1] - 1] not in visited and [v[0], v[1]-1]not in other_monsters):
 			queue.append([v[0], v[1]-1])
 			visited.append([v[0], v[1]-1])
 			positions.append([v[0], v[1] - 1])
-		
+	positions.append(monster_pos)
 	return positions
 
-def AStar(S, goals, neighborhoodFn, goalFn, visitFn, heuristicFn, total_swaps):
+def AStar(S, goals, neighborhoodFn, goalFn, visitFn, heuristicFn):
 	global maxTime, data
 	startTime = time.time()
 	st = set() 
-
-	total_swaps = total_swaps
 	
 	frontier = queue.PriorityQueue()
 
@@ -166,22 +181,18 @@ def AStar(S, goals, neighborhoodFn, goalFn, visitFn, heuristicFn, total_swaps):
 			visitFn(path)
 			currentTime = time.time()
 			return [currentTime - startTime, path]
-		if(len(path) - 2 == total_swaps):
-			continue
 		else:
 			neighborhood = neighborhoodFn(node, goals)
-
 			for neighbor in neighborhood:
 				rank = rankPerm(neighbor)
 				if neighbor not in path and rank not in st:
 					st.add(rank)
 					newPath = path + [neighbor]
-					pastCost = len(newPath)-1
+					pastCost = len(path) - 1
 					futureCost = heuristicFn(neighbor, goals)
 					totalCost = pastCost + futureCost
 					frontier.put((totalCost, newPath))
-
-
+		
 	return [-1, None]
 
 
@@ -194,8 +205,16 @@ def get_movement_between(old_pos, new_pos, monster_type, tiles):
 	current_tile = tiles[old_pos[0]][old_pos[1]]
 
 	current_pos = old_pos
+	# print("old", old_pos)
+	# print("new", new_pos)
 
+	tries = 0
 	while current_pos != new_pos:
+
+		if(tries > 20):
+			print("had issues finding solution the easy way.")
+			break
+			
 		if(row_offset > 0):
 			if(tiles[current_pos[0] -1][current_pos[1]] == monster_type):
 				current_pos =  [current_pos[0] -1, current_pos[1]]
@@ -213,9 +232,57 @@ def get_movement_between(old_pos, new_pos, monster_type, tiles):
 			if(tiles[current_pos[0]][current_pos[1] + 1] == monster_type):
 				current_pos =  [current_pos[0], current_pos[1] + 1]
 				moves.append([monster_type, "r"])
+		
 		row_offset = current_pos[0] - new_pos[0]
 
 		col_offset = current_pos[1] - new_pos[1]
+
+	
+		tries += 1
+
+
+	if(tries > 20):
+		tries = 0
+		current_pos = old_pos
+		moves = []
+		visited = [current_pos]
+
+
+		while current_pos != new_pos:
+
+			if(tries > 20):
+				print("had issues finding solution the other easy way.")
+				moves = ["sad"]
+				break			
+			if(current_pos[0] > 1):
+				if(tiles[current_pos[0] -1][current_pos[1]] == monster_type and [current_pos[0] -1, current_pos[1]] not in visited):
+						current_pos =  [current_pos[0] -1, current_pos[1]]
+						moves.append([monster_type, "u"])
+						visited.append(current_pos)
+
+			if(current_pos[1] > 1):
+				if(tiles[current_pos[0]][current_pos[1] - 1] == monster_type and [current_pos[0], current_pos[1] - 1] not in visited):
+					current_pos =  [current_pos[0], current_pos[1] - 1]
+					moves.append([monster_type, "l"])
+					visited.append(current_pos)
+
+			
+				
+			if(current_pos[0] < 5):
+				if(tiles[current_pos[0] +1][current_pos[1]] == monster_type and[current_pos[0] + 1, current_pos[1]] not in visited ):
+						current_pos =  [current_pos[0] +1, current_pos[1]]
+						moves.append([monster_type, "d"])
+						visited.append(current_pos)
+
+			if(current_pos[1] < 5):
+				
+				if(tiles[current_pos[0]][current_pos[1] + 1] == monster_type and [current_pos[0], current_pos[1] +1] not in visited):
+					current_pos =  [current_pos[0], current_pos[1] + 1]
+					moves.append([monster_type, "r"])
+					visited.append(current_pos)
+
+			tries += 1
+				# print(current_pos)
 
 	return moves
 
@@ -253,6 +320,28 @@ def generate_moves(path):
 
 	return moves
 
+def generate_level_data(row, col):
+	level_data = []
+	for i in range(row):
+		temp = []
+		for j in range(col):
+			temp.append(random.randrange(1,4))
+		level_data.append(temp)
+	return level_data
+
+def generate_monster_data(num, row, col):
+	monster_data = []
+
+	for i in range(num):
+		monster_data.append([random.randrange(0, row), random.randrange(0, col)])
+	return monster_data
+
+def generate_goal_data(num, row, col):
+	goal_data = []
+	for i in range(num):
+		goal_data.append((random.randrange(0, row), random.randrange(0, col)))
+	return goal_data
+
 if __name__ == "__main__":
 	global maxTime, data
 
@@ -261,69 +350,128 @@ if __name__ == "__main__":
 	solved30 = 0
 	solved100 = 0
 	
-	maxTime = 10
+	maxTime = 400
 	numTests = 1
 	
-	# level_data = [[1,1,2,2,3,3],[2,2,2,2,3,3],[3,3,2,2,1,1],[1,1,2,2,3,3],[1,1,1,1,3,3],[1,1,2,2,3,3]]
-	level_data = [[1, 3, 1, 2, 1, 3], [2, 3, 1, 3, 2, 1], [2, 3, 2, 1, 3, 2], [2, 1, 1, 1, 2, 3], [3, 1, 3, 2, 2, 3], [1, 1, 1, 2, 1, 3]]
-	# monster_data = [[5, 0],[3, 0],[1, 0]]
-	monster_data = [[1, 0], [0, 1], [1, 3]]
+	level_data1 = [[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3]]
+	monster_data1 = [[5, 0],[3, 0],[1, 0]]	
+	goals1 = [(0, 2),(1, 5), (5, 5)]
 
-	# monster_data = [[0, 2],[1, 5],[5, 5]]
+	level_data2 = [[1,1,2,2,3,3],[2,2,2,2,3,3],[3,3,2,2,1,1],[1,1,2,2,3,3],[1,1,1,1,3,3],[1,1,2,2,3,3]] 
+	monster_data2 = [[5, 0],[3, 0],[1, 0]]
+	goals2 = [(0, 2),(1, 5), (5, 5)]
 
-	goals = [(1, 5), (4, 2), (2, 5)]
+	level_data3 = [[2,1,2,1,3,3],[1,2,2,2,1,3],[3,3,1,2,1,2],[1,1,2,1,3,1],[1,3,1,3,2,3],[1,2,1,2,1,3]]
+	monster_data3 = [[5, 0],[3, 0],[1, 0]]
+	goals3 = [(0, 2),(1, 5), (5, 5)]
 
-	# goals = [(0, 2),(1, 5), (5, 5)]
-	total_swaps = 5
+	level_data4 = [[1, 3, 1, 2, 1, 3], [2, 3, 1, 3, 2, 1], [2, 3, 2, 1, 3, 2], [2, 1, 1, 1, 2, 3], [3, 1, 3, 2, 2, 3], [1, 1, 1, 2, 1, 3]]
+	monster_data4 = [[1, 0], [0, 1], [1, 3]]
+	goals4 = [(2, 5), (1, 5), (4, 2)]
 
+	level_data5 = [[3, 1, 3, 3, 2, 2], [1, 2, 1, 3, 1, 3], [3, 3, 3, 2, 1, 3], [3, 1, 1, 3, 2, 1], [3, 2, 2, 3, 2, 2], [3, 2, 2, 2, 2, 2]]
+	monster_data5 = [[1, 3], [1, 0], [3, 3]]
+	goals5 = [(0, 0), (2, 0),(0, 1)]
+	# toSolve = [[level_data1, monster_data1, goals1], [level_data2, monster_data2, goals2], [level_data3, monster_data3, goals3], [level_data4, monster_data4, goals4] ]
+
+	toSolve = [[level_data4, monster_data4, goals4]]
 	for i in range(numTests):
-		# state = generate_level(6,6)
-		# levels123.append(state)
+
 		print("\nRunning test " + str(i+1) + " out of " + str(numTests))
-		# printBoard(convertLevelDataToState(state[0], state[1]))
-		printBoard(level_data)
-
-		# nl = color_swap(1,2,level_data)
-		# printBoard(nl)
-
-		# print(all_positions(monster_data[0], nl, 1))
 		
-		[runTime, path] = AStar((monster_data, level_data), goals, neighbors, isGoal, doNothing, heuristicMedium, total_swaps)
-		while runTime == -1:
-			print("no solution found for swap amount", total_swaps)
-			total_swaps += 1
-			[runTime, path] = AStar((monster_data, level_data), goals, neighbors, isGoal, doNothing, heuristicMedium, total_swaps)
+		level_data = toSolve[i][0]
+		monster_data = toSolve[i][1]
+		goals = toSolve[i][2]
 
-		else:
+		# level_data = generate_level_data(6, 6)
+		# monster_data = generate_monster_data(3, 6, 6)
+		# goals = generate_goal_data(3, 6, 6)
+		
+		# printBoard(level_data)
+		print(level_data)
+		print("\n")
+
+		print(monster_data)
+		print("\n")
+		print(goals)
+		print("\n")
+
+
+	
+		
+		[runTime, path] = AStar((monster_data, level_data), goals, neighbors, isGoal, doNothing, heuristicMedium)
+		
+		if(runTime != -1):	
 			solved += 1
 			print("solution\n")
-			for i in path:
-				(monster, board) = i
-				print(monster)
-				print("")
-				printBoard(board)
+			solution = generate_moves(path)
+			print(str(solution))
+
+			# for i in path:
+			# 	(monster, board) = i
+			# 	print(monster)
+			# 	print("")
+			# 	printBoard(board)
+
+
 
 			print("solved in " + str(len(path)-2) + " Swaps")
-			print("solved in " + str(runTime) + " seconds")
+			print("solved in " + str(runTime) + " seconds") 
+			if(runTime >= 60 and len(path)-2 >= 5):
+				f = open("hard.txt", "a")
+				f.write(
+				'''
+				this.level'''+str(i)+''' = {
+					"boardInfo":'''+str(level_data)+''',
+					"MonsterPos": '''+str(monster_data)+''',
+					"GoalPos": ''' + str(goals)+''',
+					"Swaps":''' +str(len(path)-2)+''',
+					"AiSolution": '''+ str(solution)+'''
+					}'''	
+				)
+				f.close()
+			
+			if(runTime >= 5 and runTime <= 60 and len(path)-2 >= 4):
+				f = open("medium.txt", "a")
+				f.write(
+				'''
+				this.level'''+str(i)+''' = {
+					"boardInfo":'''+str(level_data)+''',
+					"MonsterPos": '''+str(monster_data)+''',
+					"GoalPos": ''' + str(goals)+''',
+					"Swaps":''' +str(len(path)-2)+''',
+					"AiSolution": '''+ str(solution)+'''
+					}'''	
+				)
+				f.close()
+			
+			if(runTime < 5 and len(path)-2 >= 5):
+				f = open("easy.txt", "a")
+				f.write(
+				'''
+				this.level'''+str(i)+''' = {
+					"boardInfo":'''+str(level_data)+''',
+					"MonsterPos": '''+str(monster_data)+''',
+					"GoalPos": ''' + str(goals)+''',
+					"Swaps":''' +str(len(path)-2)+''',
+					"AiSolution": '''+ str(solution)+'''
+					}'''	
+				)
+				f.close()
 
-		if runTime <= 101:
-			solved100 += 1
-		if runTime <= 30:
-			solved30 += 1
-		if runTime <= 5: 
-			solved5 += 1
+			if runTime >= 101:
+				solved100 += 1
+			if runTime <= 30:
+				solved30 += 1
+			if runTime <= 5: 
+				solved5 += 1
 
 	print("Total Solved:" + str(solved)+"\n")
 	print("\n")
-	# print("Number of Swaps per level:", swapNumber)
 	print("\n")
 	print("Solved in 5 seconds: " + str(solved5) + "/" + str(numTests))
 	print("Solved in 30 seconds: " + str(solved30) + "/" + str(numTests))
-	print("Solved in 100 seconds: " + str(solved100) + "/" + str(numTests))
-	print(generate_moves(path))
-
-
-
+	print("Solved in 30 seconds or more: " + str(solved100) + "/" + str(numTests))
 
 
 
@@ -342,18 +490,6 @@ if __name__ == "__main__":
 
 # goals = [(1, 5), (5, 5),(0, 2)]
 
-[  [[4, 0], [3, 0], [2, 0]], 
-   [[4, 0], [3, 0], [2, 1]], 
-   [[5, 1], [3, 0], [2, 0]], 
-   [[5, 1], [3, 0], [2, 1]], 
-   [[4, 1], [3, 0], [2, 0]], 
-   [[4, 1], [3, 0], [2, 1]], 
-   [[3, 1], [3, 0], [2, 0]], 
-   [[3, 1], [3, 0], [2, 1]], 
-   [[4, 2], [3, 0], [2, 0]], 
-   [[4, 2], [3, 0], [2, 1]], 
-   [[4, 3], [3, 0], [2, 0]], 
-   [[4, 3], [3, 0], [2, 1]]]
 
 
 
