@@ -84,6 +84,8 @@ def heuristicMedium(state, goals):
 	can_move = total_movable - no_move
 	return (steps/(can_move+1))
 
+def heuristicZero(state, goals):
+	return 0
 
 # this function finds all of the 1 step neighbors. Swaping colors or moving one square counts as 1 step.
 # this function also makes sure you cannot have two monsters occupy the same square.
@@ -124,7 +126,6 @@ def printBoard(state):
 	for row in state:
 		print(row)
 	print("\n")
-
 
 
 def all_positions(monster_pos, level_data, monster_type, other_monsters):
@@ -191,98 +192,65 @@ def AStar(S, goals, neighborhoodFn, goalFn, visitFn, heuristicFn):
 					pastCost = len(path) - 1
 					futureCost = heuristicFn(neighbor, goals)
 					totalCost = pastCost + futureCost
-					frontier.put((totalCost, newPath))
-		
+					frontier.put((totalCost, newPath))	
 	return [-1, None]
 
+def generating_solution_neighbors(state, goal):
+	neighbor = []
+	(monster_pos, monster_type, tiles, other_monsters) = state
 
-def get_movement_between(old_pos, new_pos, monster_type, tiles):
-	moves = []
-	row_offset = old_pos[0] - new_pos[0]
 
-	col_offset = old_pos[1] - new_pos[1]
+	# print("position", monster_pos)
 
-	current_tile = tiles[old_pos[0]][old_pos[1]]
+	if(monster_pos[0] > 0):
+		if(tiles[monster_pos[0] - 1][monster_pos[1]] == monster_type and [monster_pos[0] - 1, monster_pos[1]] not in other_monsters):
+			neighbor.append(([monster_pos[0] - 1,monster_pos[1]], monster_type, tiles, other_monsters))
+	if(monster_pos[1] > 0):
+		if(tiles[monster_pos[0]][monster_pos[1] - 1] == monster_type and [monster_pos[0], monster_pos[1] - 1] not in other_monsters):
+			neighbor.append(([monster_pos[0],monster_pos[1] - 1], monster_type, tiles, other_monsters))
 
-	current_pos = old_pos
-	# print("old", old_pos)
-	# print("new", new_pos)
-
-	tries = 0
-	while current_pos != new_pos:
-
-		if(tries > 20):
-			print("had issues finding solution the easy way.")
-			break
-			
-		if(row_offset > 0):
-			if(tiles[current_pos[0] -1][current_pos[1]] == monster_type):
-				current_pos =  [current_pos[0] -1, current_pos[1]]
-				moves.append([monster_type, "u"])
-		if(col_offset > 0):
-			if(tiles[current_pos[0]][current_pos[1] - 1] == monster_type):
-				current_pos =  [current_pos[0], current_pos[1] - 1]
-				moves.append([monster_type, "l"])
-
-		if(row_offset < 0):
-			if(tiles[current_pos[0] +1][current_pos[1]] == monster_type):
-				current_pos =  [current_pos[0] +1, current_pos[1]]
-				moves.append([monster_type, "d"])
-		if(col_offset < 0):
-			if(tiles[current_pos[0]][current_pos[1] + 1] == monster_type):
-				current_pos =  [current_pos[0], current_pos[1] + 1]
-				moves.append([monster_type, "r"])
-		
-		row_offset = current_pos[0] - new_pos[0]
-
-		col_offset = current_pos[1] - new_pos[1]
-
+	if(monster_pos[0] < len(tiles[0])-1):
+		if(tiles[monster_pos[0] + 1][monster_pos[1]] == monster_type  and [monster_pos[0] + 1, monster_pos[1]] not in other_monsters):
+			neighbor.append(([monster_pos[0] + 1,monster_pos[1]], monster_type, tiles, other_monsters))
+	if(monster_pos[1] < len(tiles)-1):
+		if(tiles[monster_pos[0]][monster_pos[1] + 1] == monster_type and [monster_pos[0], monster_pos[1] + 1] not in other_monsters):
+			neighbor.append(([monster_pos[0],monster_pos[1] + 1], monster_type, tiles, other_monsters))
 	
-		tries += 1
+	return neighbor
 
+def generating_solution_check_goals(state, goal):
+	(monster_pos, monster_type, tiles, _) = state
+	if(monster_pos == goal):
+		return True
+	else:
+		return False
 
-	if(tries > 20):
-		tries = 0
-		current_pos = old_pos
-		moves = []
-		visited = [current_pos]
+def get_movement_between(old_pos, new_pos, monster_type, tiles, other_monsters):
+	state = (old_pos, monster_type, tiles, other_monsters)
+	[runtime, path] = AStar(state, new_pos, generating_solution_neighbors, generating_solution_check_goals, doNothing, heuristicZero)
 
+	moves = []
 
-		while current_pos != new_pos:
+	starting_pos = path[0]
+	(old_pos, _, _, _) = starting_pos
 
-			if(tries > 20):
-				print("had issues finding solution the other easy way.")
-				moves = ["sad"]
-				break			
-			if(current_pos[0] > 1):
-				if(tiles[current_pos[0] -1][current_pos[1]] == monster_type and [current_pos[0] -1, current_pos[1]] not in visited):
-						current_pos =  [current_pos[0] -1, current_pos[1]]
-						moves.append([monster_type, "u"])
-						visited.append(current_pos)
+	for i in range(0, len(path)-1):
+		current_pos = path[i+1]
+		(new_pos, _, _, _) = current_pos
 
-			if(current_pos[1] > 1):
-				if(tiles[current_pos[0]][current_pos[1] - 1] == monster_type and [current_pos[0], current_pos[1] - 1] not in visited):
-					current_pos =  [current_pos[0], current_pos[1] - 1]
-					moves.append([monster_type, "l"])
-					visited.append(current_pos)
+		print("old", old_pos)
+		print("new", new_pos)
+		if(old_pos[0] < new_pos[0]):
+			moves.append([monster_type, "d"])
+		if(old_pos[0] > new_pos[0]):
+			moves.append([monster_type, "u"])
+		if(old_pos[1] < new_pos[1]):
+			moves.append([monster_type, "r"])
+		if(old_pos[1] > new_pos[1]):
+			moves.append([monster_type, "l"])
 
-			
-				
-			if(current_pos[0] < 5):
-				if(tiles[current_pos[0] +1][current_pos[1]] == monster_type and[current_pos[0] + 1, current_pos[1]] not in visited ):
-						current_pos =  [current_pos[0] +1, current_pos[1]]
-						moves.append([monster_type, "d"])
-						visited.append(current_pos)
-
-			if(current_pos[1] < 5):
-				
-				if(tiles[current_pos[0]][current_pos[1] + 1] == monster_type and [current_pos[0], current_pos[1] +1] not in visited):
-					current_pos =  [current_pos[0], current_pos[1] + 1]
-					moves.append([monster_type, "r"])
-					visited.append(current_pos)
-
-			tries += 1
-				# print(current_pos)
+		old_pos = new_pos
+	print(moves)
 
 	return moves
 
@@ -299,7 +267,9 @@ def generate_moves(path):
 			swaped = True
 
 		for i in range(len(monsters_current)):
-			temp = get_movement_between(monsters_start[i], monsters_current[i], i+1,  start_tiles)
+			other_monsters = copy.deepcopy(monsters_current)
+			other_monsters.pop(i)
+			temp = get_movement_between(monsters_start[i], monsters_current[i], i+1,  start_tiles, other_monsters)
 			for i in temp:
 				moves.append(i)
 		for i in range(len(start_tiles)):
@@ -396,9 +366,6 @@ if __name__ == "__main__":
 		print(goals)
 		print("\n")
 
-
-	
-		
 		[runTime, path] = AStar((monster_data, level_data), goals, neighbors, isGoal, doNothing, heuristicMedium)
 		
 		if(runTime != -1):	
@@ -412,8 +379,6 @@ if __name__ == "__main__":
 			# 	print(monster)
 			# 	print("")
 			# 	printBoard(board)
-
-
 
 			print("solved in " + str(len(path)-2) + " Swaps")
 			print("solved in " + str(runTime) + " seconds") 

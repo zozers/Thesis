@@ -435,7 +435,14 @@ class playGame extends Phaser.Scene{
                     this.sprites[i].destroy();
             }
  
-                this.aiTimeline.stop();
+                try{
+                    this.aiTimeline.stop();
+                }
+
+                catch{
+
+                }
+                
                 this.GameLogic.next();
                 this.new(next);
                 this.GameLogic.ai_in_progress = false;
@@ -449,7 +456,15 @@ class playGame extends Phaser.Scene{
                 this.sprites[i].destroy();
             }
 
-            this.aiTimeline.stop();
+             try{
+                    this.aiTimeline.stop();
+                }
+
+                catch{
+                    
+                }
+
+            // this.aiTimeline.stop();
             this.GameLogic.prev();
             this.new(prev);
             this.GameLogic.ai_in_progress = false;
