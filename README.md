@@ -1,4 +1,4 @@
-# Thesis Puzzle Swap Monster
+# Thesis Puzzle: Swap Monster
 by Zoe Offermann
 
 This is a puzzle game where you use the abuility to swap colors to traverse towrds a goal.
