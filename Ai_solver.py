@@ -5,53 +5,31 @@ import time
 import copy 
 import queue
 import random
+from collections import deque
 
+# global monster_visited
+# monster_visited = [[], [], []]
 def isGoal(state, goals):
+	(monster_data, _) = state
+	# print(monster_data, goals)
 	# Due to the nanture of the color swapping depending on the order there are multiple winning states.
-	goalStates = []
-	goalState = copy.deepcopy(state)
-	
-	for row in range(len(goalState)):
-		for col in range(len(goalState[0])):
-			try:
-				(monster, tile) = goalState[row][col]
-				temp = goals.index((row, col)) + 1
-				goalState[row][col] = (temp, tile)
-
-			except ValueError:
-				(monster, tile) = goalState[row][col]
-				if(monster != 0):
-					goalState[row][col] = (0, tile)
-				
-	goalStates.append(goalState)
-	
-	newGoal = copy.deepcopy(goalState)
-	goalStates.append(color_swap( 1, 2, newGoal))
-	
-	newGoal = copy.deepcopy(goalState)
-	goalStates.append(color_swap( 2, 1, newGoal))
-
-	newGoal = copy.deepcopy(goalState)
-	goalStates.append(color_swap( 3, 1, newGoal))
-
-	newGoal = copy.deepcopy(goalState)
-	goalStates.append(color_swap( 1, 3, newGoal))
-
-	newGoal = copy.deepcopy(goalState)
-	goalStates.append(color_swap( 3, 2, newGoal))
-
-	return state in goalStates
+	for i in range(len(goals)):
+		(row, col) = goals[i]
+		if(monster_data[i][0] != row or monster_data[i][1] != col):
+			return False
+	return True
 
 # This function swaps the two colors passed in on the scene.
 def color_swap( color1, color2, state):
+	new_state = copy.deepcopy(state)
 	for i in range(len(state)):
 		for j in range(len(state[0])):
-			(monster, tile) = state[i][j]
+			tile = state[i][j]
 			if(tile == color1):
-				state[i][j] = (monster, color2)                   
+				new_state[i][j] = color2                   
 			elif(tile == color2):
-				state[i][j] = (monster, color1)
-	return state 
+				new_state[i][j] = color1
+	return new_state 
    
 # This function finds the row, col, and color of the monsters in the state.
 def find_monsters(state):
@@ -63,94 +41,83 @@ def find_monsters(state):
 				positions.append((i, j, monster)) #row, col, color
 	return positions
 
-# This funftion takes in a solution and calculates how many swaps take place.		   
-def count_swaps(path):
-	swaps = 0
-	for i in range(len(path[1:])-1):
-		lastPos = find_monsters(path[0+i])
+def rankPerm(perm):    
+	return str(perm)
 
-		monsters = find_monsters(path[1+ i])
+		
 
-		if(lastPos == monsters):
-			swaps += 1
-	return swaps
+def doNothing(path):
+	pass
 
+def heuristicMedium(state, goals):
+	steps = 0
+	mtype = 0
+	(monsters, tiles) = state
+	check_movement = 0
+	no_move = 0
+	on_goal = 0
+
+	i = 0
+	for monster in monsters:
+
+		if(i == 0):
+			other_monsters = monster_data[1:]
+		elif(i == 1):
+			other_monsters = [monster_data[0], monster_data[2]]
+		else:
+			other_monsters = [monster_data[0], monster_data[1]]
+
+		(gRow, gCol) = goals[mtype]
+		steps += abs(monster[0] - gRow) + abs(monster[1] - gCol)
+		mtype += 1
+
+		if((abs(monster[0] - gRow) == 0 and abs(monster[1] - gCol) == 0 )):
+			on_goal += 1
+		else:
+			check_movement = len(all_positions(monster, tiles, mtype, other_monsters))			
+			if(check_movement == 0):
+				no_move += 1
+		i += 1
+
+	total_movable = 3 - on_goal
+
+	can_move = total_movable - no_move
+	return (steps/(can_move+1))
+
+def heuristicZero(state, goals):
+	return 0
 
 # this function finds all of the 1 step neighbors. Swaping colors or moving one square counts as 1 step.
-# this function also makes sure you cannot have tow monsters occupy the same square.
-def neighbors(state):
+# this function also makes sure you cannot have two monsters occupy the same square.
+def neighbors(state, goals):
+	(monster_data, level_data) = state
 	neighborhood = []
+	all_positions_arr = []
 	
-	# find monster positions
-	monsters = find_monsters(state)
+	for i in range(len(monster_data)):
+		if(i == 0):
+			other_monsters = monster_data[1:]
+		elif(i == 1):
+			other_monsters = [monster_data[0], monster_data[2]]
+		else:
+			other_monsters = [monster_data[0], monster_data[1]]
 
-	monster1 = monsters[0]
-	monster2 = monsters[1]
-	monster3 = monsters[2]
-
-	(r1, c1, co1) = monster1
-	(r2, c2, co2) = monster2
-	(r3, c3, co3) = monster3
-
-	moveNum = 0 
-
-	for monster in monsters:
-		(row, col, color) = monster
-
-		# check left
-		if( col > 0):
-			(empty, leftColor) = state[row][col -1] 
-			if leftColor == color and [row, (col-1)] not in [[r1, c1], [r2, c2], [r3, c3]]:
-				moveNum += 1
-				newState = copy.deepcopy(state)
-				newState[row][col - 1] = (color, leftColor)
-				(old_player, old_tile) = newState[row][col]
-				newState[row][col] = (0,old_tile )
-				neighborhood.append(newState)
-
-		# check right
-		if(col < len(state) - 1):
-			(empty, rightColor) = state[row][col +1]
-			if rightColor == color and [row, (col + 1)] not in [[r1, c1], [r2, c2], [r3, c3]]:
-				moveNum += 1
-				newState = copy.deepcopy(state)
-				newState[row][col + 1] = (color, rightColor)
-				(old_player, old_tile) = newState[row][col]
-				newState[row][col] = (0,old_tile )
-				neighborhood.append(newState)
-
-		# check up
-		if(row > 0):
-			(empty, upColor) = state[row - 1][col]
-			if( upColor == color and [(row - 1), col] not in [[r1, c1], [r2, c2], [r3, c3]]):
-				moveNum += 1
-				newState = copy.deepcopy(state)
-				newState[row - 1][col] = (color, upColor)
-				(old_player, old_tile) = newState[row][col]
-				newState[row][col] = (0, old_tile )
-				neighborhood.append(newState)
-
-		# check down
-		if(row < len(state[0]) - 1):
-			(empty, downColor) = state[row + 1][col]
-			if downColor == color and [(row + 1), col] not in [[r1, c1], [r2, c2], [r3, c3]]:
-				moveNum += 1
-				newState = copy.deepcopy(state)
-				newState[row + 1][col] = (color, downColor)
-				(old_player, old_tile) = newState[row][col]
-				newState[row][col] = (0,old_tile )
-				neighborhood.append(newState)
+		(row, col) = goals[i]
+		if(monster_data[i][0] != row or monster_data[i][1] != col):
+			x = all_positions(monster_data[i], level_data, i + 1, other_monsters)
+			all_positions_arr.append(x)
+		else:
+			x = [monster_data[i]]
+			all_positions_arr.append(x)
 	
-	newState = copy.deepcopy(state)
-	neighborhood.append(color_swap( 1, 2, newState))
-
-	newState = copy.deepcopy(state)
-	neighborhood.append(color_swap( 1, 3, newState))
-
-	newState = copy.deepcopy(state)
-	neighborhood.append(color_swap( 2, 3, newState))
-
-	
+	for i in range(len(all_positions_arr[0])):
+		for j in range(len(all_positions_arr[1])):
+			for k in range(len(all_positions_arr[2])):
+				if(all_positions_arr[0][i] != all_positions_arr[1][j] and all_positions_arr[0][i] != all_positions_arr[2][k] and all_positions_arr[1][j] != all_positions_arr[2][k]):						
+					neighborhood.append(([all_positions_arr[0][i], all_positions_arr[1][j], all_positions_arr[2][k]], color_swap(1, 2, level_data)))
+					neighborhood.append(([all_positions_arr[0][i], all_positions_arr[1][j], all_positions_arr[2][k]], color_swap(1, 3, level_data)))
+					neighborhood.append(([all_positions_arr[0][i], all_positions_arr[1][j], all_positions_arr[2][k]], color_swap(2, 3, level_data)))
+					
 	return neighborhood
 
 
@@ -160,38 +127,50 @@ def printBoard(state):
 		print(row)
 	print("\n")
 
-def heuristicBad(state):
-	return 0
-				
 
-# better number the closer each monster is to its respective goal.
-def heuristicMedium(state, goals):
-	steps = 0
-	monsters = find_monsters(state)
+def all_positions(monster_pos, level_data, monster_type, other_monsters):
+	positions = []
+	queue = deque([monster_pos])
+	visited = [monster_pos]
 
-	for monster in monsters:
-		(row, col, monsterType) = monster
+	while queue:
+		v = queue.popleft()
+		if(v[0] < len(level_data) - 1 and level_data[v[0] + 1][v[1]] == monster_type and [v[0] + 1, v[1]] not in visited and [v[0] + 1, v[1]] not in other_monsters):
+			queue.append([v[0] + 1, v[1]])
+			visited.append([v[0] + 1, v[1]])
+			positions.append([v[0] + 1, v[1]])
+		
+		if(v[0] > 0 and level_data[v[0] - 1][v[1]] == monster_type and [v[0] - 1, v[1]] and [v[0] - 1, v[1]] not in visited):
+			queue.append([v[0] - 1, v[1]])
+			visited.append([v[0] - 1, v[1]])
+			positions.append([v[0] - 1, v[1]])
 
-		(gRow, gCol) = goals[monsterType - 1]
+		
+		if(v[1] < len(level_data[0]) - 1 and level_data[v[0]][v[1] + 1] == monster_type and [v[0], v[1]+1] not in visited and [v[0], v[1]+1] not in other_monsters):
+			queue.append([v[0], v[1]+1])
+			visited.append([v[0], v[1] + 1])
+			positions.append([v[0], v[1] + 1])
 
-		steps += abs(row - gRow) + abs(gCol - col)
-
-	return steps
-
+		
+		if(v[1] > 0 and level_data[v[0]][v[1] - 1] == monster_type and [v[0], v[1] - 1] not in visited and [v[0], v[1]-1]not in other_monsters):
+			queue.append([v[0], v[1]-1])
+			visited.append([v[0], v[1]-1])
+			positions.append([v[0], v[1] - 1])
+	positions.append(monster_pos)
+	return positions
 
 def AStar(S, goals, neighborhoodFn, goalFn, visitFn, heuristicFn):
 	global maxTime, data
 	startTime = time.time()
 	st = set() 
-
 	
 	frontier = queue.PriorityQueue()
-	for s in S:
-		frontier.put((0, [s]))
+
+	frontier.put((0, [S]))
 
 	while frontier.qsize() > 0:
 		(_, path) = frontier.get()
-		node = path[-1] 
+		node = path[-1]
 
 		# check time
 		currentTime = time.time()
@@ -203,226 +182,245 @@ def AStar(S, goals, neighborhoodFn, goalFn, visitFn, heuristicFn):
 			visitFn(path)
 			currentTime = time.time()
 			return [currentTime - startTime, path]
-		
 		else:
-			neighborhood = neighborhoodFn(node)
-
+			neighborhood = neighborhoodFn(node, goals)
 			for neighbor in neighborhood:
 				rank = rankPerm(neighbor)
 				if neighbor not in path and rank not in st:
 					st.add(rank)
 					newPath = path + [neighbor]
-					pastCost = len(newPath)-1
+					pastCost = len(path) - 1
 					futureCost = heuristicFn(neighbor, goals)
 					totalCost = pastCost + futureCost
-					frontier.put((totalCost, newPath))
-
-
+					frontier.put((totalCost, newPath))	
 	return [-1, None]
 
-# this function takes in the data I had in my game.js to generate a state. 
-# example:
-# level_data = [[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3]]
-# monster_pos = [ [5, 0],[3, 0],[1, 0] ]
+def generating_solution_neighbors(state, goal):
+	neighbor = []
+	(monster_pos, monster_type, tiles, other_monsters) = state
 
-def convertLevelDataToState(level_data, monster_pos):
+
+	# print("position", monster_pos)
+
+	if(monster_pos[0] > 0):
+		if(tiles[monster_pos[0] - 1][monster_pos[1]] == monster_type and [monster_pos[0] - 1, monster_pos[1]] not in other_monsters):
+			neighbor.append(([monster_pos[0] - 1,monster_pos[1]], monster_type, tiles, other_monsters))
+	if(monster_pos[1] > 0):
+		if(tiles[monster_pos[0]][monster_pos[1] - 1] == monster_type and [monster_pos[0], monster_pos[1] - 1] not in other_monsters):
+			neighbor.append(([monster_pos[0],monster_pos[1] - 1], monster_type, tiles, other_monsters))
+
+	if(monster_pos[0] < len(tiles[0])-1):
+		if(tiles[monster_pos[0] + 1][monster_pos[1]] == monster_type  and [monster_pos[0] + 1, monster_pos[1]] not in other_monsters):
+			neighbor.append(([monster_pos[0] + 1,monster_pos[1]], monster_type, tiles, other_monsters))
+	if(monster_pos[1] < len(tiles)-1):
+		if(tiles[monster_pos[0]][monster_pos[1] + 1] == monster_type and [monster_pos[0], monster_pos[1] + 1] not in other_monsters):
+			neighbor.append(([monster_pos[0],monster_pos[1] + 1], monster_type, tiles, other_monsters))
 	
-	state = []
-	for i in range(len(level_data)):
-		temp = []
-		for j in range(len(level_data[0])):
-			if([i, j] in monster_pos):
-				monsterType = monster_pos.index([i, j]) + 1
-			else:
-				monsterType = 0
-			temp.append((monsterType, level_data[i][j]))
-		state.append(temp)
-	return state
+	return neighbor
 
-def generate_level(width, height):
-	
-	monster = []
-	goal = []
-	level_data = []
+def generating_solution_check_goals(state, goal):
+	(monster_pos, monster_type, tiles, _) = state
+	if(monster_pos == goal):
+		return True
+	else:
+		return False
 
-	for i in range(3):
-		temp1 = [random.randrange(0, 6), random.randrange(0, 6)]
+def get_movement_between(old_pos, new_pos, monster_type, tiles, other_monsters):
+	state = (old_pos, monster_type, tiles, other_monsters)
+	[runtime, path] = AStar(state, new_pos, generating_solution_neighbors, generating_solution_check_goals, doNothing, heuristicZero)
 
-		while temp1 in monster:
-			temp1 = [random.randrange(0, 6), random.randrange(0, 6)]
-		
-		monster.append(temp1)
-		
-		temp2 = (random.randrange(0, 6), random.randrange(0, 6))
-		while temp2 in goal:
-			temp2 = (random.randrange(0, 6), random.randrange(0, 6))
-		goal.append(temp2)
-	
-	for row in range(width):
-		temp = []
-		for col in range(height):
-			temp.append(random.randrange(1,4))
-		level_data.append(temp)
-	print("level_data",level_data)
-	print("\n")
-	print("monster_data",monster)
-	print("\n")
-	print("goal_data", goal)
-	return [level_data, monster, goal]
-
-def generate_moves(path):
 	moves = []
-	monsters_start = find_monsters(path[0])
-	past_state = path[0]
-	
-	for state in path[1:]:
-		monsters_current = find_monsters(state)
-		swaped = False
-		for monster in monsters_current:
-			monster_moved = False
-			
-			for monster1 in monsters_start:
-				(i, j, monster_type) = monster
-				(row, col, monster_type2) = monster1
-				if(monster_type == monster_type2):
-					if(row - i > 0):
-						monster_moved = True
-						moves.append([monster_type, "u"])
-					if(row - i < 0):
-						monster_moved = True
-						moves.append([monster_type, "d"])
-					if(col - j > 0):
-						monster_moved = True
-						moves.append([monster_type, "l"])
-					if(col - j < 0):
-						monster_moved = True
-						moves.append([monster_type, "r"])
-					
-				if(monster_moved == False):
-					for i in range(len(state)):
-						for j in range(len(state[0])):
-							if(swaped == True):
-								break
-							(_, tile1) = state[i][j]
-							(_, tile2) = past_state[i][j]
-							if(tile1 != tile2):
-								print(swaped)
-								print([[tile1, tile2], "s"])
-								moves.append([[tile1, tile2], "s"])
-								swaped = True
-								
-						if(swaped == True):
-							break
 
-		monsters_start = monsters_current
-		past_state = state
+	starting_pos = path[0]
+	(old_pos, _, _, _) = starting_pos
+
+	for i in range(0, len(path)-1):
+		current_pos = path[i+1]
+		(new_pos, _, _, _) = current_pos
+
+		print("old", old_pos)
+		print("new", new_pos)
+		if(old_pos[0] < new_pos[0]):
+			moves.append([monster_type, "d"])
+		if(old_pos[0] > new_pos[0]):
+			moves.append([monster_type, "u"])
+		if(old_pos[1] < new_pos[1]):
+			moves.append([monster_type, "r"])
+		if(old_pos[1] > new_pos[1]):
+			moves.append([monster_type, "l"])
+
+		old_pos = new_pos
+	print(moves)
 
 	return moves
 
+def generate_moves(path):
+	moves = []
+	(monsters_start, start_tiles) = path[0]
+	past_state = path[0]
 	
+	for state in path[1:]:
+		monsters_current, current_tiles = state
+		swaped = False
 
+		if(state == path[-1]):
+			swaped = True
 
+		for i in range(len(monsters_current)):
+			other_monsters = copy.deepcopy(monsters_current)
+			other_monsters.pop(i)
+			temp = get_movement_between(monsters_start[i], monsters_current[i], i+1,  start_tiles, other_monsters)
+			for i in temp:
+				moves.append(i)
+		for i in range(len(start_tiles)):
+			for j in range(len(start_tiles[0])):
+				if(swaped == True):
+					break
 
-def rankPerm(perm):    
-	return str(perm)
+				tile1 = start_tiles[i][j]
+				tile2 = current_tiles[i][j]
+				if(tile1 != tile2):
 
-		
+					moves.append([[tile1, tile2], "s"])
+					swaped = True
+			if(swaped == True):
+				break
 
-def doNothing(path):
-	pass
+		(monsters_start, start_tiles) = state
 
+	return moves
+
+def generate_level_data(row, col):
+	level_data = []
+	for i in range(row):
+		temp = []
+		for j in range(col):
+			temp.append(random.randrange(1,4))
+		level_data.append(temp)
+	return level_data
+
+def generate_monster_data(num, row, col):
+	monster_data = []
+
+	for i in range(num):
+		monster_data.append([random.randrange(0, row), random.randrange(0, col)])
+	return monster_data
+
+def generate_goal_data(num, row, col):
+	goal_data = []
+	for i in range(num):
+		goal_data.append((random.randrange(0, row), random.randrange(0, col)))
+	return goal_data
 
 if __name__ == "__main__":
 	global maxTime, data
-	
+
 	solved = 0
 	solved5 = 0
 	solved30 = 0
 	solved100 = 0
 	
-	maxTime = 200
+	maxTime = 400
 	numTests = 1
-
-	swapNumber = []
-
 	
-	state1 = [ [(0, 1), (0, 1), (0, 2), (0, 2), (0, 3), (0, 3)],
-				[(3, 1), (0, 1), (0, 2), (0, 2), (0, 3), (0, 3)],
-				[(0, 1), (0, 1), (0, 2), (0, 2), (0, 3), (0, 3)],
-				[(2, 1), (0, 1), (0, 2), (0, 2), (0, 3), (0, 3)],
-				[(0, 1), (0, 1), (0, 2), (0, 2), (0, 3), (0, 3)],
-				[(1, 1), (0, 1), (0, 2), (0, 2), (0, 3), (0, 3)] ]
 
-	state2 = convertLevelDataToState([[1,1,2,2,3,3],[2,2,2,2,3,3],[3,3,2,2,1,1],[1,1,2,2,3,3],[1,1,1,1,3,3],[1,1,2,2,3,3]], [ [5, 0],[3, 0],[1, 0] ])
+	level_data = [[1,1,1,1,1,1],[1,2,2,2,2,1],[1,2,3,3,2,1],[1,2,3,3,2,1],[1,2,2,2,2,1],[1,1,1,1,1,1]]
+	monster_data = [[1, 2],[3, 4],[5, 0]]	
+	goals = [(0, 0),(3, 3), (4, 5)]
 
-	state3 = convertLevelDataToState([[2,1,2,1,3,3],[1,2,2,2,1,3],[3,3,1,2,1,2],[1,1,2,1,3,1],[1,3,1,3,2,3],[1,2,1,2,1,3]], [ [5, 0],[3, 0],[1, 0] ])
-
-	# state4 = generate_level(6, 6)
-
-	# print("monster",state4[1])
-
-
-	# states = [state1, state2, state3, convertLevelDataToState(state4[0], state4[1])]
-	# goals = state4[2]
-
-	# print("goals",goals)
-	goals = [(0, 2),(1, 5), (5, 5)]
-
-	# levels123 = []
 	for i in range(numTests):
-		# state = generate_level(6,6)
-		# levels123.append(state)
+
 		print("\nRunning test " + str(i+1) + " out of " + str(numTests))
-		# printBoard(convertLevelDataToState(state[0], state[1]))
-		printBoard(state3)
 		
-		[runTime, path] = AStar([state3], goals, neighbors, isGoal, doNothing, heuristicMedium)
-		if runTime == -1:
-			print("no solution found")
-		else:
+
+		# level_data = generate_level_data(6, 6)
+		# monster_data = generate_monster_data(3, 6, 6)
+		# goals = generate_goal_data(3, 6, 6)
+		
+		# printBoard(level_data)
+		print(level_data)
+		print("\n")
+
+		print(monster_data)
+		print("\n")
+		print(goals)
+		print("\n")
+
+		[runTime, path] = AStar((monster_data, level_data), goals, neighbors, isGoal, doNothing, heuristicMedium)
+		
+		if(runTime != -1):	
 			solved += 1
 			print("solution\n")
-			for i in path:
-				printBoard(i)
+			solution = generate_moves(path)
+			print(str(solution))
 
-			print(count_swaps(path))
-			swapNumber.append(count_swaps(path))
-			print("solved in " + str(len(path)-1) + " moves")
-			print("solved in " + str(runTime) + " seconds")
+			# for i in path:
+			# 	(monster, board) = i
+			# 	print(monster)
+			# 	print("")
+			# 	printBoard(board)
 
-		if runTime <= 101:
-			solved100 += 1
-		if runTime <= 30:
-			solved30 += 1
-		if runTime <= 5: 
-			solved5 += 1
+			print("solved in " + str(len(path)-2) + " Swaps")
+			print("solved in " + str(runTime) + " seconds") 
+			# if(runTime >= 60 and len(path)-2 >= 5):
+			# 	f = open("hard.txt", "a")
+			# 	f.write(
+			# 	'''
+			# 	this.level'''+str(i)+''' = {
+			# 		"boardInfo":'''+str(level_data)+''',
+			# 		"MonsterPos": '''+str(monster_data)+''',
+			# 		"GoalPos": ''' + str(goals)+''',
+			# 		"Swaps":''' +str(len(path)-2)+''',
+			# 		"AiSolution": '''+ str(solution)+'''
+			# 		}'''	
+			# 	)
+			# 	f.close()
+			
+			# if(runTime >= 5 and runTime <= 60 and len(path)-2 >= 4):
+			# 	f = open("medium.txt", "a")
+			# 	f.write(
+			# 	'''
+			# 	this.level'''+str(i)+''' = {
+			# 		"boardInfo":'''+str(level_data)+''',
+			# 		"MonsterPos": '''+str(monster_data)+''',
+			# 		"GoalPos": ''' + str(goals)+''',
+			# 		"Swaps":''' +str(len(path)-2)+''',
+			# 		"AiSolution": '''+ str(solution)+'''
+			# 		}'''	
+			# 	)
+			# 	f.close()
+			
+			# if(runTime < 5 and len(path)-2 >= 5):
+			# 	f = open("easy.txt", "a")
+			# 	f.write(
+			# 	'''
+			# 	this.level'''+str(i)+''' = {
+			# 		"boardInfo":'''+str(level_data)+''',
+			# 		"MonsterPos": '''+str(monster_data)+''',
+			# 		"GoalPos": ''' + str(goals)+''',
+			# 		"Swaps":''' +str(len(path)-2)+''',
+			# 		"AiSolution": '''+ str(solution)+'''
+			# 		}'''	
+			# 	)
+			# 	f.close()
+
+			if runTime >= 101:
+				solved100 += 1
+			if runTime <= 30:
+				solved30 += 1
+			if runTime <= 5: 
+				solved5 += 1
 
 	print("Total Solved:" + str(solved)+"\n")
 	print("\n")
-	print("Number of Swaps per level:", swapNumber)
 	print("\n")
 	print("Solved in 5 seconds: " + str(solved5) + "/" + str(numTests))
 	print("Solved in 30 seconds: " + str(solved30) + "/" + str(numTests))
-	print("Solved in 100 seconds: " + str(solved100) + "/" + str(numTests))
-	print(generate_moves(path))
+	print("Solved in 30 seconds or more: " + str(solved100) + "/" + str(numTests))
 
 
 
 
-# starting board is a 6 by 6 matrix with tuples as the values. The tuple is in the form (player type, tile type).
-# 1 = yellow, 2 = blue, 3 = red applies for both player type and tile type. 0 in player type means there is no player
-# on the tile.
-
-# state = [ [(0, 1), (0, 1), (0, 2), (0, 2), (0, 3), (0, 3)],
-#                 [(3, 1), (0, 1), (0, 2), (0, 2), (0, 3), (0, 3)],
-#                 [(0, 1), (0, 1), (0, 2), (0, 2), (0, 3), (0, 3)],
-#                 [(2, 1), (0, 1), (0, 2), (0, 2), (0, 3), (0, 3)],
-#                 [(0, 1), (0, 1), (0, 2), (0, 2), (0, 3), (0, 3)],
-#                 [(1, 1), (0, 1), (0, 2), (0, 2), (0, 3), (0, 3)] ]
-
-# the goals are stored in an array with the value (row, col) in the tuple. The index of the goal is the color type it is.
-
-# goals = [(1, 5), (5, 5),(0, 2)]
 
 
 

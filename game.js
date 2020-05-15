@@ -175,7 +175,7 @@ class playGame extends Phaser.Scene{
         this.sprites.push(swap_yellow_blue);
         
         let swapText;
-        swapText = this.add.text(game.config.width/ 2 - 250, game.config.height/5 - 130, "Swaps Left: ", { font: '85px Arial', fill: '#BDBDBD'});
+        swapText = this.add.text(game.config.width/ 2 - 270, game.config.height/5 - 130, "Swaps Left: ", { font: '85px Arial', fill: '#BDBDBD'});
         this.sprites.push(swapText);
         this.GameLogic.displaySwap(swapText);
 
@@ -190,7 +190,7 @@ class playGame extends Phaser.Scene{
        
         this.sprites.push(prev);
 
-        let prevText = this.add.text(game.config.width/2 - 310 , game.config.height/5 + 10, "Previous Level", { font: '28px Arial', color: '0x222222' });
+        let prevText = this.add.text(game.config.width/2 - 312 , game.config.height/5 + 12, "Previous Level", { font: '28px Arial', color: '0x222222' });
         this.sprites.push(prevText);
         
        
@@ -198,7 +198,7 @@ class playGame extends Phaser.Scene{
         let reset = this.add.sprite(game.config.width / 2 , game.config.height/5 + 30, 'button').setInteractive();
         this.sprites.push(reset);
 
-        let resetText = this.add.text(game.config.width/2 - 80, game.config.height/5 + 10, "Reset Level", { font: '30px Arial', color: '0x222222' });
+        let resetText = this.add.text(game.config.width/2 - 80, game.config.height/5 + 12, "Reset Level", { font: '30px Arial', color: '0x222222' });
         this.sprites.push(resetText);
 
 
@@ -213,14 +213,14 @@ class playGame extends Phaser.Scene{
        
         this.sprites.push(next);
     
-        let nextText = this.add.text(game.config.width/2 + 150, game.config.height/5 + 10, "Next Level", { font: '30px Arial', color: '0x222222' });
+        let nextText = this.add.text(game.config.width/2 + 150, game.config.height/5 + 12, "Next Level", { font: '30px Arial', color: '0x222222' });
         this.sprites.push(nextText);
         
        
 
         let ai = this.add.sprite(game.config.width/2 - 290, game.config.height/5 + 340, "button").setInteractive();
         ai.angle += 90;
-        let aiText = this.add.text(game.config.width/2 - 330, game.config.height/5 + 330, "Toggle Ai", { font: '20px Arial', color: '0x222222' });
+        let aiText = this.add.text(game.config.width/2 - 332, game.config.height/5 + 330, "Toggle Ai", { font: '20px Arial', color: '0x222222' });
         this.sprites.push(aiText);
         this.sprites.push(ai);
 
@@ -316,14 +316,14 @@ class playGame extends Phaser.Scene{
 
     ai_buttons(){
 
-        let aiModeText = this.add.text(game.config.width/ 2 - 250, game.config.height/5 - 130, "Ai Mode", { font: '85px Arial', fill: '#BDBDBD'});
+        let aiModeText = this.add.text(game.config.width/ 2 - 145, game.config.height/5 - 130, "Ai Mode", { font: '85px Arial', fill: '#BDBDBD'});
         this.sprites.push(aiModeText);
 
         let pause = this.add.sprite(game.config.width/ 2 - 220, game.config.height/5 + 30, 'button').setInteractive();
         
         this.sprites.push(pause);
 
-        let pauseText = this.add.text(game.config.width/2 - 310 , game.config.height/5 + 10, "Pause", { font: '28px Arial', color: '0x222222' });
+        let pauseText = this.add.text(game.config.width/2 - 260 , game.config.height/5 + 12, "Pause", { font: '28px Arial', color: '0x222222' });
         this.sprites.push(pauseText);
 
         let pauseBool = false;
@@ -332,7 +332,7 @@ class playGame extends Phaser.Scene{
         let reset = this.add.sprite(game.config.width / 2 , game.config.height/5 + 30, 'button').setInteractive();
         this.sprites.push(reset);
 
-        let resetText = this.add.text(game.config.width/2 - 80, game.config.height/5 + 10, "Reset Level", { font: '30px Arial', color: '0x222222' });
+        let resetText = this.add.text(game.config.width/2 - 80, game.config.height/5 + 12, "Reset Level", { font: '30px Arial', color: '0x222222' });
         this.sprites.push(resetText);
 
 
@@ -340,7 +340,7 @@ class playGame extends Phaser.Scene{
         
         this.sprites.push(start);
         
-        let startText = this.add.text(game.config.width/2 + 150, game.config.height/5 + 10, "Start", { font: '30px Arial', color: '0x222222' });
+        let startText = this.add.text(game.config.width/2 + 185, game.config.height/5 + 12, "Start", { font: '30px Arial', color: '0x222222' });
         this.sprites.push(startText);
 
 
@@ -355,7 +355,7 @@ class playGame extends Phaser.Scene{
        
         this.sprites.push(prev);
 
-        let prevText = this.add.text(game.config.width/2 - 310 , game.config.height-210, "Previous Level", { font: '28px Arial', color: '0x222222' });
+        let prevText = this.add.text(game.config.width/2 - 312 , game.config.height-215, "Previous Level", { font: '28px Arial', color: '0x222222' });
         this.sprites.push(prevText);
 
         let next = this.add.sprite(game.config.width / 2 + 220, game.config.height - 200, 'button').setInteractive();
@@ -369,7 +369,7 @@ class playGame extends Phaser.Scene{
        
         this.sprites.push(next);
     
-        let nextText = this.add.text(game.config.width/2 + 150, game.config.height - 210, "Next Level", { font: '30px Arial', color: '0x222222' });
+        let nextText = this.add.text(game.config.width/2 + 150, game.config.height - 215, "Next Level", { font: '30px Arial', color: '0x222222' });
         this.sprites.push(nextText);
 
 
@@ -405,7 +405,8 @@ class playGame extends Phaser.Scene{
                 this.aiTimeline.pause();
                 console.log(pauseText);
                 pauseBool = true;
-                pauseText.setText('Play');
+                pauseText.setText('  Play');
+                pauseText
                 }
                 else{
                     this.aiTimeline.resume();
@@ -422,8 +423,14 @@ class playGame extends Phaser.Scene{
                 this.sprites[i].destroy();
             }
 
-            this.aiTimeline.stop();
-        
+            try{
+                this.aiTimeline.stop();
+            }
+
+            catch{
+
+            }
+
             this.GameLogic.reset();
             this.new(reset);
 
@@ -634,10 +641,13 @@ class playGame extends Phaser.Scene{
         }
 
         else{
-            let nextButton = this.add.sprite(game.config.width / 2 , game.config.height/2, 'button').setInteractive();
-            let nextText = this.add.text(game.config.width / 2 - 80, game.config.height /2-15, "Next Level", { font: '35px Arial', color: '0x222222' });
+            let nextButton = this.add.sprite(game.config.width / 2 , game.config.height/2 + 30, 'button').setInteractive();
+            let nextText = this.add.text(game.config.width / 2 - 80, game.config.height /2+15, "Next Level", { font: '35px Arial', color: '0x222222' });
             this.sprites.push(nextButton);
             this.sprites.push(nextText);
+
+            nextButton.setDepth(2);
+            nextText.setDepth(2);
 
             nextButton.on('pointerdown', function (pointer)
             {
@@ -871,7 +881,7 @@ class GameLogic{
         this.levelnum = 0;
         this.maxLevelSolved = 0;
 
-        this.totallevels = 4; // levelnum starts at 0 
+        this.totallevels = 12; // levelnum starts at 0 
         this.monsterPos = null;
 
         this.ai_mode = false;
