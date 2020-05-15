@@ -11,4 +11,4 @@ This is the output of Ai_solver.py being animated in the game.
 
 <img src="assets/AI_working.gif" width=200><br>
 
-The Ai Solver is an implementation of the A*. To learn more read my thesis!
+The Ai Solver is an implementation of the A* algorithm. To learn more read my thesis!
