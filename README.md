@@ -1,6 +1,7 @@
 # Thesis Puzzle: Swap Monster
 by Zoe Offermann
 PLAY here: https://zozers.github.io/Thesis/
+
 This is a puzzle game where you use the ability to swap colors to traverse towards a goal.
 
 The goal of this puzzle is to move each monster to the star with the same color. Each monster can only move on its own color. You can swap the colors a limited amount of time per level. (example of swap: Make all red squares blue and blue square red)
